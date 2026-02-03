@@ -1,11 +1,10 @@
-// js/app.js
-
 // Application State
 const AppState = {
     currentTheme: 'light',
-    currentProject: null,
+    cabinets: [], // Array of all cabinets added to table
     savedProjects: [],
-    isSidebarOpen: false
+    isSidebarOpen: false,
+    currentCabinetId: 1 // Auto-increment ID for cabinets
 };
 
 // DOM Elements
@@ -16,7 +15,9 @@ const domElements = {
     closeSidebar: document.getElementById('closeSidebar'),
     sidebar: document.getElementById('sidebar'),
     calculateBtn: document.getElementById('calculateBtn'),
+    addToTableBtn: document.getElementById('addToTableBtn'),
     resetBtn: document.getElementById('resetBtn'),
+    clearTableBtn: document.getElementById('clearTableBtn'),
     printBtn: document.getElementById('printBtn'),
     pdfBtn: document.getElementById('pdfBtn'),
     saveProjectBtn: document.getElementById('saveProjectBtn'),
@@ -38,7 +39,8 @@ const domElements = {
     resultCraftsman: document.getElementById('resultCraftsman'),
     resultClient: document.getElementById('resultClient'),
     resultDate: document.getElementById('resultDate'),
-    resultsSubtitle: document.getElementById('resultsSubtitle')
+    resultsSubtitle: document.getElementById('resultsSubtitle'),
+    cabinetCount: document.getElementById('cabinetCount')
 };
 
 // Initialize the application
@@ -55,8 +57,10 @@ function init() {
     // Set up event listeners
     setupEventListeners();
     
-    // Initialize with default values
-    updateResultsSubtitle();
+    // Initialize with empty table
+    updateCabinetCount();
+    
+    console.log('Aqua Drawer LAB initialized successfully');
 }
 
 // Theme Management
@@ -100,7 +104,7 @@ function setTodayDate() {
 }
 
 function convertToPersianDate(date) {
-    // Simple Persian date formatter (in a real app, you would use a library like moment-jalaali)
+    // Simple Persian date formatter
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     
@@ -122,7 +126,7 @@ function validateForm() {
     
     if (isNaN(width) || width < 30 || width > 200) {
         isValid = false;
-        errorMessage = 'عرض کابینت باید بین 30 تا 200 سانتی‌متر باشد';
+        errorMessage = 'عرض کابینت باید بین ۳۰ تا ۲۰۰ سانتی‌متر باشد';
         highlightInvalidField(domElements.cabinetWidth);
     } else {
         removeHighlight(domElements.cabinetWidth);
@@ -130,7 +134,7 @@ function validateForm() {
     
     if (isNaN(height) || height < 30 || height > 300) {
         isValid = false;
-        errorMessage = 'ارتفاع کابینت باید بین 30 تا 300 سانتی‌متر باشد';
+        errorMessage = 'ارتفاع کابینت باید بین ۳۰ تا ۳۰۰ سانتی‌متر باشد';
         highlightInvalidField(domElements.cabinetHeight);
     } else {
         removeHighlight(domElements.cabinetHeight);
@@ -138,7 +142,7 @@ function validateForm() {
     
     if (isNaN(depth) || depth < 30 || depth > 100) {
         isValid = false;
-        errorMessage = 'عمق کابینت باید بین 30 تا 100 سانتی‌متر باشد';
+        errorMessage = 'عمق کابینت باید بین ۳۰ تا ۱۰۰ سانتی‌متر باشد';
         highlightInvalidField(domElements.cabinetDepth);
     } else {
         removeHighlight(domElements.cabinetDepth);
@@ -146,7 +150,7 @@ function validateForm() {
     
     if (isNaN(shelves) || shelves < 0 || shelves > 20) {
         isValid = false;
-        errorMessage = 'تعداد طبقات باید بین 0 تا 20 باشد';
+        errorMessage = 'تعداد طبقات باید بین ۰ تا ۲۰ باشد';
         highlightInvalidField(domElements.shelfCount);
     } else {
         removeHighlight(domElements.shelfCount);
@@ -161,7 +165,7 @@ function validateForm() {
 
 function highlightInvalidField(field) {
     field.parentElement.style.borderColor = '#e74c3c';
-    field.parentElement.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.2)';
+    field.parentElement.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.2)';
 }
 
 function removeHighlight(field) {
@@ -184,16 +188,18 @@ function showError(message) {
         top: 20px;
         left: 20px;
         right: 20px;
-        background-color: #e74c3c;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
         color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
+        padding: 16px 20px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(231, 76, 60, 0.3);
         animation: slideIn 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     `;
     
     document.body.appendChild(toast);
@@ -221,55 +227,57 @@ style.textContent = `
         from { transform: translateY(0); opacity: 1; }
         to { transform: translateY(-100%); opacity: 0; }
     }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 `;
 document.head.appendChild(style);
 
-// Calculation Functions
-function calculateCabinetParts() {
+// Cabinet Calculation Functions
+function calculateWallCabinetParts() {
     const width = parseFloat(domElements.cabinetWidth.value);
     const height = parseFloat(domElements.cabinetHeight.value);
     const depth = parseFloat(domElements.cabinetDepth.value);
     const shelfCount = parseInt(domElements.shelfCount.value);
-    const isWallCabinet = document.getElementById('wallCabinet').checked;
     
     const parts = [];
     
-    // Side panels (2 pieces)
+    // Side panels (بدنه) - 2 pieces
     parts.push({
-        description: 'دیواره جانبی',
+        description: 'بدنه',
         quantity: 2,
-        width: height,
-        length: depth,
+        width: depth, // عمق = عرض بدنه
+        length: height, // ارتفاع = طول بدنه
         groove: false,
-        pvcWidth: '',
-        pvcLength: '',
+        pvcWidth: false,
+        pvcLength: false,
         attachment: ''
     });
     
-    // Shelves
+    // Top & Bottom panels (سقف و کف) - 2 pieces
+    parts.push({
+        description: 'سقف و کف',
+        quantity: 2,
+        width: depth, // عمق = عرض
+        length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
+        groove: false,
+        pvcWidth: false,
+        pvcLength: false,
+        attachment: ''
+    });
+    
+    // Shelves (طبقه)
     for (let i = 1; i <= shelfCount; i++) {
         parts.push({
             description: `طبقه ${i}`,
             quantity: 1,
-            width: width - 3.2,
-            length: depth - 2,
+            width: depth - 2, // عمق - 2 = عرض
+            length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
             groove: false,
-            pvcWidth: '',
-            pvcLength: '',
-            attachment: ''
-        });
-    }
-    
-    // Top panel (only for wall cabinets)
-    if (isWallCabinet) {
-        parts.push({
-            description: 'صفحه رویه',
-            quantity: 1,
-            width: width - 3.2,
-            length: depth,
-            groove: false,
-            pvcWidth: '',
-            pvcLength: '',
+            pvcWidth: false,
+            pvcLength: false,
             attachment: ''
         });
     }
@@ -277,121 +285,376 @@ function calculateCabinetParts() {
     return parts;
 }
 
-// Table Generation
-function generateResultsTable() {
+function calculateFloorCabinetParts() {
+    const width = parseFloat(domElements.cabinetWidth.value);
+    const height = parseFloat(domElements.cabinetHeight.value);
+    const depth = parseFloat(domElements.cabinetDepth.value);
+    const shelfCount = Math.min(parseInt(domElements.shelfCount.value), 1); // فقط یک طبقه برای کابینت زمینی
+    
+    const parts = [];
+    
+    // Side panels (بدنه) - 2 pieces (ارتفاع - 1.6)
+    parts.push({
+        description: 'بدنه',
+        quantity: 2,
+        width: depth, // عمق = عرض بدنه
+        length: (height - 1.6).toFixed(1), // ارتفاع - 1.6 = طول بدنه
+        groove: false,
+        pvcWidth: false,
+        pvcLength: false,
+        attachment: ''
+    });
+    
+    // Bottom panel (کف) - 1 piece
+    parts.push({
+        description: 'کف',
+        quantity: 1,
+        width: depth, // عمق = عرض
+        length: width.toFixed(1), // عرض کابینت = طول
+        groove: false,
+        pvcWidth: false,
+        pvcLength: false,
+        attachment: ''
+    });
+    
+    // Stretchers (تیرک) - 2 pieces (عرض - 3.2 و عمق ۱۲)
+    parts.push({
+        description: 'تیرک',
+        quantity: 2,
+        width: 12, // عمق ثابت ۱۲ سانتی‌متر
+        length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
+        groove: false,
+        pvcWidth: false,
+        pvcLength: false,
+        attachment: ''
+    });
+    
+    // Shelf (طبقه) - 1 piece فقط اگر تعداد طبقات > 0
+    if (shelfCount > 0) {
+        parts.push({
+            description: 'طبقه',
+            quantity: 1,
+            width: depth - 2, // عمق - 2 = عرض
+            length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
+            groove: false,
+            pvcWidth: false,
+            pvcLength: false,
+            attachment: ''
+        });
+    }
+    
+    return parts;
+}
+
+// 3D Schematic Drawing Function
+function create3DSchematic(cabinetType, width, height, depth, shelfCount) {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const container = document.createElement('div');
+    container.className = 'cabinet-schematic';
+    
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 200 150');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    
+    // Main rectangle (cabinet body)
+    const cabinetRect = document.createElementNS(svgNS, 'rect');
+    cabinetRect.setAttribute('x', '20');
+    cabinetRect.setAttribute('y', '20');
+    cabinetRect.setAttribute('width', cabinetType === 'wall' ? '120' : '140');
+    cabinetRect.setAttribute('height', cabinetType === 'wall' ? '80' : '100');
+    cabinetRect.setAttribute('fill', 'none');
+    cabinetRect.setAttribute('stroke', '#5d4037');
+    cabinetRect.setAttribute('stroke-width', '2');
+    svg.appendChild(cabinetRect);
+    
+    // Depth indicator line (diagonal)
+    const depthLine = document.createElementNS(svgNS, 'line');
+    depthLine.setAttribute('x1', cabinetType === 'wall' ? '140' : '160');
+    depthLine.setAttribute('y1', '20');
+    depthLine.setAttribute('x2', cabinetType === 'wall' ? '160' : '180');
+    depthLine.setAttribute('y2', '40');
+    depthLine.setAttribute('stroke', '#3498db');
+    depthLine.setAttribute('stroke-width', '1.5');
+    depthLine.setAttribute('stroke-dasharray', '4,2');
+    svg.appendChild(depthLine);
+    
+    // Labels
+    const addLabel = (text, x, y, fontSize = '10') => {
+        const label = document.createElementNS(svgNS, 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', y);
+        label.setAttribute('font-size', fontSize);
+        label.setAttribute('fill', '#2c3e50');
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('font-weight', 'bold');
+        label.textContent = text;
+        svg.appendChild(label);
+    };
+    
+    // Height label (left side)
+    addLabel(`${height}`, cabinetType === 'wall' ? '15' : '15', cabinetType === 'wall' ? '60' : '70', '11');
+    
+    // Width label (top side)
+    addLabel(`${width}`, cabinetType === 'wall' ? '80' : '90', '12', '11');
+    
+    // Depth label (diagonal)
+    addLabel(`${depth}`, cabinetType === 'wall' ? '150' : '170', '28', '10');
+    
+    // Shelves (dashed horizontal lines)
+    if (shelfCount > 0) {
+        const shelfSpacing = (cabinetType === 'wall' ? 80 : 100) / (shelfCount + 1);
+        
+        for (let i = 1; i <= shelfCount; i++) {
+            const shelfY = 20 + (shelfSpacing * i);
+            const shelf = document.createElementNS(svgNS, 'line');
+            shelf.setAttribute('x1', '20');
+            shelf.setAttribute('y1', shelfY);
+            shelf.setAttribute('x2', cabinetType === 'wall' ? '140' : '160');
+            shelf.setAttribute('y2', shelfY);
+            shelf.setAttribute('stroke', '#e74c3c');
+            shelf.setAttribute('stroke-width', '1');
+            shelf.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(shelf);
+        }
+    }
+    
+    // For floor cabinet, add bottom stretcher indicator
+    if (cabinetType === 'floor') {
+        const stretcher = document.createElementNS(svgNS, 'line');
+        stretcher.setAttribute('x1', '20');
+        stretcher.setAttribute('y1', '110');
+        stretcher.setAttribute('x2', '160');
+        stretcher.setAttribute('y2', '110');
+        stretcher.setAttribute('stroke', '#27ae60');
+        stretcher.setAttribute('stroke-width', '2');
+        stretcher.setAttribute('stroke-dasharray', '6,3');
+        svg.appendChild(stretcher);
+    }
+    
+    svg.appendChild(cabinetRect);
+    container.appendChild(svg);
+    
+    return container;
+}
+
+// Table Generation Functions
+function generateCabinetTable() {
     if (!validateForm()) {
         return;
     }
     
-    // Get form values
+    const isWallCabinet = document.getElementById('wallCabinet').checked;
+    const cabinetType = isWallCabinet ? 'wall' : 'floor';
+    const cabinetTypeName = isWallCabinet ? 'دیواری' : 'زمینی';
+    
+    // Get current cabinet data
     const width = parseFloat(domElements.cabinetWidth.value);
     const height = parseFloat(domElements.cabinetHeight.value);
     const depth = parseFloat(domElements.cabinetDepth.value);
     const shelfCount = parseInt(domElements.shelfCount.value);
-    const isWallCabinet = document.getElementById('wallCabinet').checked;
     const craftsman = domElements.craftsmanName.value || 'تعیین نشده';
     const client = domElements.clientName.value || 'تعیین نشده';
     const date = domElements.projectDate.value || convertToPersianDate(new Date());
     
-    // Update result metadata
-    domElements.resultCraftsman.textContent = craftsman;
-    domElements.resultClient.textContent = client;
-    domElements.resultDate.textContent = date;
+    // Calculate parts based on cabinet type
+    const parts = isWallCabinet ? calculateWallCabinetParts() : calculateFloorCabinetParts();
     
-    // Calculate parts
-    const parts = calculateCabinetParts();
-    
-    // Generate table rows
-    const tableBody = domElements.tableBody;
-    tableBody.innerHTML = '';
-    
-    // Add cabinet number and 3D view with rowspan
-    const cabinetType = isWallCabinet ? 'دیواری' : 'زمینی';
-    const cabinetNumber = 1; // In this version, we only handle one cabinet
-    
-    // Create first row with rowspan for 3D view
-    const firstRow = document.createElement('tr');
-    firstRow.innerHTML = `
-        <td rowspan="${parts.length}" class="cabinet-3d-cell">
-            <div class="cabinet-number">کابینت ${cabinetType} ${cabinetNumber}</div>
-            <div class="cabinet-3d"></div>
-        </td>
-        <td><input type="checkbox" class="groove-checkbox"></td>
-        <td><input type="text" class="pvc-input" placeholder="عرض"></td>
-        <td><input type="text" class="pvc-input" placeholder="طول"></td>
-        <td>${parts[0].description}</td>
-        <td>${parts[0].quantity}</td>
-        <td>${parts[0].width.toFixed(1)}</td>
-        <td>${parts[0].length.toFixed(1)}</td>
-        <td><input type="text" class="attachment-input" placeholder="شماره"></td>
-    `;
-    tableBody.appendChild(firstRow);
-    
-    // Add remaining rows
-    for (let i = 1; i < parts.length; i++) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><input type="checkbox" class="groove-checkbox"></td>
-            <td><input type="text" class="pvc-input" placeholder="عرض"></td>
-            <td><input type="text" class="pvc-input" placeholder="طول"></td>
-            <td>${parts[i].description}</td>
-            <td>${parts[i].quantity}</td>
-            <td>${parts[i].width.toFixed(1)}</td>
-            <td>${parts[i].length.toFixed(1)}</td>
-            <td><input type="text" class="attachment-input" placeholder="شماره"></td>
-        `;
-        tableBody.appendChild(row);
-    }
-    
-    // Update results subtitle
-    updateResultsSubtitle();
-    
-    // Show results section
-    domElements.resultsSection.style.display = 'block';
-    
-    // Save current project to state
-    AppState.currentProject = {
+    // Create cabinet object
+    const cabinet = {
+        id: AppState.currentCabinetId++,
+        type: cabinetType,
+        typeName: cabinetTypeName,
         width,
         height,
         depth,
         shelfCount,
-        isWallCabinet,
+        parts,
         craftsman,
         client,
         date,
-        parts,
         timestamp: new Date().getTime()
     };
     
-    // Scroll to results
-    domElements.resultsSection.scrollIntoView({ behavior: 'smooth' });
+    // Add to cabinets array
+    AppState.cabinets.push(cabinet);
+    
+    // Update UI
+    updateResultsMetadata(craftsman, client, date);
+    updateCabinetCount();
+    renderTable();
+    
+    // Show results section if hidden
+    domElements.resultsSection.style.display = 'block';
+    
+    showSuccess(`کابینت ${cabinetTypeName} به جدول اضافه شد`);
 }
 
-function updateResultsSubtitle() {
-    const width = domElements.cabinetWidth.value || '80';
-    const height = domElements.cabinetHeight.value || '120';
-    const depth = domElements.cabinetDepth.value || '55';
-    const shelves = domElements.shelfCount.value || '2';
-    const isWallCabinet = document.getElementById('wallCabinet').checked;
-    const cabinetType = isWallCabinet ? 'دیواری' : 'زمینی';
+function addToTable() {
+    generateCabinetTable();
+}
+
+function updateResultsMetadata(craftsman, client, date) {
+    domElements.resultCraftsman.textContent = craftsman;
+    domElements.resultClient.textContent = client;
+    domElements.resultDate.textContent = date;
+}
+
+function updateCabinetCount() {
+    const count = AppState.cabinets.length;
+    domElements.cabinetCount.textContent = count;
     
-    domElements.resultsSubtitle.textContent = 
-        `کابینت ${cabinetType} - عرض: ${width} سانتی‌متر - ارتفاع: ${height} سانتی‌متر - عمق: ${depth} سانتی‌متر - تعداد طبقات: ${shelves}`;
+    if (count > 0) {
+        domElements.resultsSubtitle.textContent = `لیست ${count} کابینت محاسبه شده`;
+    } else {
+        domElements.resultsSubtitle.textContent = 'لیست تمام کابینت‌های محاسبه شده';
+    }
+}
+
+function renderTable() {
+    const tableBody = domElements.tableBody;
+    
+    if (AppState.cabinets.length === 0) {
+        tableBody.innerHTML = `
+            <tr class="empty-table-message">
+                <td colspan="9">
+                    <div class="empty-state">
+                        <i class="mdi mdi-table-large"></i>
+                        <p>هنوز کابینتی به جدول اضافه نشده است</p>
+                        <small>از دکمه "محاسبه جدول" یا "افزودن به جدول" استفاده کنید</small>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = '';
+    
+    // Group cabinets by type for numbering
+    const cabinetCounts = {
+        wall: 0,
+        floor: 0
+    };
+    
+    AppState.cabinets.forEach(cabinet => {
+        cabinetCounts[cabinet.type]++;
+        const cabinetNumber = cabinetCounts[cabinet.type];
+        
+        // Create 3D schematic
+        const schematic = create3DSchematic(cabinet.type, cabinet.width, cabinet.height, cabinet.depth, cabinet.shelfCount);
+        
+        // Add cabinet header row with rowspan
+        const headerRow = document.createElement('tr');
+        headerRow.className = 'cabinet-header-row';
+        headerRow.innerHTML = `
+            <td rowspan="${cabinet.parts.length}" class="cabinet-3d-cell">
+                <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
+                ${schematic.outerHTML}
+                <div class="cabinet-dimensions">
+                    <small>${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر</small>
+                </div>
+            </td>
+            <td><input type="checkbox" class="groove-checkbox"></td>
+            <td><input type="checkbox" class="pvc-checkbox" data-type="width"></td>
+            <td><input type="checkbox" class="pvc-checkbox" data-type="length"></td>
+            <td>${cabinet.parts[0].description}</td>
+            <td>${cabinet.parts[0].quantity}</td>
+            <td>${cabinet.parts[0].width}</td>
+            <td>${cabinet.parts[0].length}</td>
+            <td><input type="text" class="attachment-input" placeholder="-" value="${cabinet.parts[0].attachment}"></td>
+        `;
+        tableBody.appendChild(headerRow);
+        
+        // Add remaining parts rows
+        for (let i = 1; i < cabinet.parts.length; i++) {
+            const part = cabinet.parts[i];
+            const row = document.createElement('tr');
+            row.className = 'cabinet-part-row';
+            row.innerHTML = `
+                <td><input type="checkbox" class="groove-checkbox"></td>
+                <td><input type="checkbox" class="pvc-checkbox" data-type="width"></td>
+                <td><input type="checkbox" class="pvc-checkbox" data-type="length"></td>
+                <td>${part.description}</td>
+                <td>${part.quantity}</td>
+                <td>${part.width}</td>
+                <td>${part.length}</td>
+                <td><input type="text" class="attachment-input" placeholder="-" value="${part.attachment}"></td>
+            `;
+            tableBody.appendChild(row);
+        }
+    });
+    
+    // Add event listeners to checkboxes and inputs
+    addTableEventListeners();
+}
+
+function addTableEventListeners() {
+    // Groove checkboxes
+    document.querySelectorAll('.groove-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // You can add additional logic here if needed
+            console.log('Groove checkbox changed:', this.checked);
+        });
+    });
+    
+    // PVC checkboxes
+    document.querySelectorAll('.pvc-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log('PVC checkbox changed:', this.checked, this.dataset.type);
+        });
+    });
+    
+    // Attachment inputs
+    document.querySelectorAll('.attachment-input').forEach(input => {
+        input.addEventListener('input', function() {
+            console.log('Attachment input changed:', this.value);
+        });
+    });
+}
+
+function clearTable() {
+    if (AppState.cabinets.length === 0) {
+        showError('جدول در حال حاضر خالی است');
+        return;
+    }
+    
+    if (!confirm('آیا از پاک کردن تمام جدول اطمینان دارید؟ این عمل قابل بازگشت نیست.')) {
+        return;
+    }
+    
+    AppState.cabinets = [];
+    AppState.currentCabinetId = 1;
+    updateCabinetCount();
+    renderTable();
+    
+    showSuccess('جدول با موفقیت پاک شد');
 }
 
 // Project Management
 function saveProject() {
-    if (!AppState.currentProject) {
-        showError('لطفاً ابتدا یک پروژه محاسبه کنید');
+    if (AppState.cabinets.length === 0) {
+        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
         return;
     }
     
-    // Add to saved projects
-    AppState.savedProjects.push({
-        ...AppState.currentProject,
+    const craftsman = domElements.craftsmanName.value || 'تعیین نشده';
+    const client = domElements.clientName.value || 'تعیین نشده';
+    const date = domElements.projectDate.value || convertToPersianDate(new Date());
+    
+    // Create project object
+    const project = {
         id: Date.now(),
-        name: `پروژه ${new Date().toLocaleDateString('fa-IR')}`
-    });
+        name: `پروژه ${new Date().toLocaleDateString('fa-IR')}`,
+        cabinets: [...AppState.cabinets],
+        craftsman,
+        client,
+        date,
+        timestamp: new Date().getTime(),
+        totalCabinets: AppState.cabinets.length
+    };
+    
+    // Add to saved projects
+    AppState.savedProjects.push(project);
     
     // Save to localStorage
     localStorage.setItem('aquaDrawerProjects', JSON.stringify(AppState.savedProjects));
@@ -409,6 +672,7 @@ function loadSavedProjects() {
         try {
             AppState.savedProjects = JSON.parse(saved);
         } catch (e) {
+            console.error('Error loading saved projects:', e);
             AppState.savedProjects = [];
         }
     }
@@ -436,7 +700,8 @@ function renderProjectsList() {
                 <div class="project-meta">
                     <span><i class="mdi mdi-account-hard-hat"></i> ${project.craftsman}</span>
                     <span><i class="mdi mdi-calendar"></i> ${project.date}</span>
-                    <span><i class="mdi mdi-ruler"></i> ${project.width}×${project.height}×${project.depth} سانتی‌متر</span>
+                    <span><i class="mdi mdi-cube-outline"></i> ${project.totalCabinets} کابینت</span>
+                    <span><i class="mdi mdi-clock"></i> ${new Date(project.timestamp).toLocaleTimeString('fa-IR')}</span>
                 </div>
             </div>
             <div class="project-actions">
@@ -470,24 +735,36 @@ function loadProject(projectId) {
     const project = AppState.savedProjects.find(p => p.id === projectId);
     if (!project) return;
     
-    // Fill form with project data
-    domElements.cabinetWidth.value = project.width;
-    domElements.cabinetHeight.value = project.height;
-    domElements.cabinetDepth.value = project.depth;
-    domElements.shelfCount.value = project.shelfCount;
-    domElements.craftsmanName.value = project.craftsman;
-    domElements.clientName.value = project.client;
-    domElements.projectDate.value = project.date;
+    // Clear current table
+    AppState.cabinets = [...project.cabinets];
+    AppState.currentCabinetId = Math.max(...project.cabinets.map(c => c.id)) + 1;
     
-    // Set cabinet type
-    if (project.isWallCabinet) {
-        document.getElementById('wallCabinet').checked = true;
-    } else {
-        document.getElementById('floorCabinet').checked = true;
+    // Set form values from first cabinet
+    if (project.cabinets.length > 0) {
+        const firstCabinet = project.cabinets[0];
+        domElements.cabinetWidth.value = firstCabinet.width;
+        domElements.cabinetHeight.value = firstCabinet.height;
+        domElements.cabinetDepth.value = firstCabinet.depth;
+        domElements.shelfCount.value = firstCabinet.shelfCount;
+        domElements.craftsmanName.value = project.craftsman;
+        domElements.clientName.value = project.client;
+        domElements.projectDate.value = project.date;
+        
+        // Set cabinet type
+        if (firstCabinet.type === 'wall') {
+            document.getElementById('wallCabinet').checked = true;
+        } else {
+            document.getElementById('floorCabinet').checked = true;
+        }
     }
     
-    // Calculate and show results
-    generateResultsTable();
+    // Update UI
+    updateResultsMetadata(project.craftsman, project.client, project.date);
+    updateCabinetCount();
+    renderTable();
+    
+    // Show results section
+    domElements.resultsSection.style.display = 'block';
     
     showSuccess('پروژه با موفقیت بارگذاری شد');
 }
@@ -506,17 +783,14 @@ function deleteProject(projectId) {
 
 function resetForm() {
     // Reset to default values
-    domElements.cabinetWidth.value = 80;
-    domElements.cabinetHeight.value = 120;
-    domElements.cabinetDepth.value = 55;
+    domElements.cabinetWidth.value = 80.0;
+    domElements.cabinetHeight.value = 120.0;
+    domElements.cabinetDepth.value = 55.0;
     domElements.shelfCount.value = 2;
     document.getElementById('wallCabinet').checked = true;
     domElements.craftsmanName.value = '';
     domElements.clientName.value = '';
     setTodayDate();
-    
-    // Hide results section
-    domElements.resultsSection.style.display = 'none';
     
     // Clear highlights
     removeHighlight(domElements.cabinetWidth);
@@ -529,116 +803,382 @@ function resetForm() {
 
 // Export Functions
 function printTable() {
-    window.print();
+    if (AppState.cabinets.length === 0) {
+        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
+        return;
+    }
+    
+    // Create a print-friendly version
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl" lang="fa">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>جدول ریزاندازه کابینت - Aqua Drawer LAB</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+                
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: 'Vazirmatn', sans-serif;
+                }
+                
+                body {
+                    padding: 20px;
+                    color: #000;
+                    line-height: 1.6;
+                }
+                
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 3px solid #333;
+                    padding-bottom: 20px;
+                }
+                
+                .print-header h1 {
+                    color: #2c3e50;
+                    font-size: 24px;
+                    margin-bottom: 10px;
+                }
+                
+                .print-metadata {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    background: #f5f5f5;
+                    border-radius: 8px;
+                }
+                
+                .metadata-item {
+                    display: flex;
+                    gap: 10px;
+                }
+                
+                .metadata-label {
+                    font-weight: bold;
+                    color: #2c3e50;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                    font-size: 12px;
+                }
+                
+                th, td {
+                    border: 1px solid #333;
+                    padding: 10px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+                
+                th {
+                    background-color: #ddd;
+                    font-weight: bold;
+                    color: #000;
+                }
+                
+                tbody tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                
+                .cabinet-header {
+                    background-color: #e8f4fc !important;
+                    font-weight: bold;
+                }
+                
+                .cabinet-number {
+                    background: #2c3e50;
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    margin-bottom: 10px;
+                }
+                
+                .print-footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    color: #666;
+                    font-size: 11px;
+                    border-top: 1px solid #ddd;
+                    padding-top: 15px;
+                }
+                
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+                    
+                    .no-print {
+                        display: none !important;
+                    }
+                    
+                    table {
+                        page-break-inside: auto;
+                    }
+                    
+                    tr {
+                        page-break-inside: avoid;
+                        page-break-after: auto;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1>جدول ریزاندازه جهت کات مستر</h1>
+                <p>Aqua Drawer LAB - ابزار تخصصی تجزیه باکس کابینت</p>
+            </div>
+            
+            <div class="print-metadata">
+                <div class="metadata-item">
+                    <span class="metadata-label">استادکار:</span>
+                    <span>${domElements.resultCraftsman.textContent}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">مشتری:</span>
+                    <span>${domElements.resultClient.textContent}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">تاریخ:</span>
+                    <span>${domElements.resultDate.textContent}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">تعداد کابینت‌ها:</span>
+                    <span>${AppState.cabinets.length}</span>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">نمای سه‌بعدی</th>
+                        <th rowspan="2">شیار</th>
+                        <th colspan="2">نوار PVC</th>
+                        <th rowspan="2">نوع قطعه / توضیحات</th>
+                        <th rowspan="2">تعداد</th>
+                        <th colspan="2">ابعاد (سانتی‌متر)</th>
+                        <th rowspan="2">شماره پیوست</th>
+                    </tr>
+                    <tr>
+                        <th>عرض</th>
+                        <th>طول</th>
+                        <th>عرض</th>
+                        <th>طول</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${generatePrintTableRows()}
+                </tbody>
+            </table>
+            
+            <div class="print-footer">
+                <p>تولید شده توسط Aqua Drawer LAB - ساخته شده توسط ممد</p>
+                <p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} - ساعت: ${new Date().toLocaleTimeString('fa-IR')}</p>
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                };
+            </script>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+
+function generatePrintTableRows() {
+    let rows = '';
+    let cabinetCounts = { wall: 0, floor: 0 };
+    
+    AppState.cabinets.forEach(cabinet => {
+        cabinetCounts[cabinet.type]++;
+        const cabinetNumber = cabinetCounts[cabinet.type];
+        
+        // Add cabinet header row
+        rows += `
+            <tr class="cabinet-header">
+                <td rowspan="${cabinet.parts.length}">
+                    <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
+                    <div>${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر</div>
+                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${cabinet.parts[0].description}</td>
+                <td>${cabinet.parts[0].quantity}</td>
+                <td>${cabinet.parts[0].width}</td>
+                <td>${cabinet.parts[0].length}</td>
+                <td>-</td>
+            </tr>
+        `;
+        
+        // Add remaining parts rows
+        for (let i = 1; i < cabinet.parts.length; i++) {
+            const part = cabinet.parts[i];
+            rows += `
+                <tr>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${part.description}</td>
+                    <td>${part.quantity}</td>
+                    <td>${part.width}</td>
+                    <td>${part.length}</td>
+                    <td>-</td>
+                </tr>
+            `;
+        }
+    });
+    
+    return rows;
 }
 
 async function exportToPDF() {
+    if (AppState.cabinets.length === 0) {
+        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
+        return;
+    }
+    
     try {
         // Show loading state
         const originalText = domElements.pdfBtn.innerHTML;
         domElements.pdfBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> در حال تولید PDF...';
         domElements.pdfBtn.disabled = true;
         
-        // Import jsPDF dynamically
+        // Import jsPDF
         const { jsPDF } = window.jspdf;
         
-        // Create PDF
-        const pdf = new jsPDF('p', 'mm', 'a4');
+        // Create PDF in landscape orientation
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
         
-        // Set Persian font (using default font for now)
+        // Set metadata
+        pdf.setProperties({
+            title: 'جدول ریزاندازه کابینت',
+            subject: 'Aqua Drawer LAB - جدول ریزاندازه جهت کات مستر',
+            author: 'Aqua Drawer LAB',
+            creator: 'By_zZzMohammadzZz'
+        });
+        
+        // Add Persian font (using default font that supports RTL)
         pdf.setFont('helvetica');
         
-        // Add title
-        pdf.setFontSize(18);
-        pdf.text('جدول ریزاندازه جهت کات مستر', 105, 20, { align: 'center' });
+        // Title
+        pdf.setFontSize(20);
+        pdf.text('جدول ریزاندازه جهت کات مستر', 148, 20, { align: 'center' });
         
-        // Add metadata
         pdf.setFontSize(12);
-        pdf.text(`استادکار: ${domElements.resultCraftsman.textContent}`, 20, 35);
-        pdf.text(`مشتری: ${domElements.resultClient.textContent}`, 105, 35, { align: 'center' });
-        pdf.text(`تاریخ: ${domElements.resultDate.textContent}`, 180, 35, { align: 'right' });
+        pdf.text('Aqua Drawer LAB - ابزار تخصصی تجزیه باکس کابینت', 148, 28, { align: 'center' });
         
-        // Add table
-        const tableElement = document.querySelector('.results-table');
+        // Metadata
+        pdf.setFontSize(10);
+        const metadataY = 40;
+        pdf.text(`استادکار: ${domElements.resultCraftsman.textContent}`, 20, metadataY);
+        pdf.text(`مشتری: ${domElements.resultClient.textContent}`, 148, metadataY, { align: 'center' });
+        pdf.text(`تاریخ: ${domElements.resultDate.textContent}`, 276, metadataY, { align: 'right' });
+        pdf.text(`تعداد کابینت‌ها: ${AppState.cabinets.length}`, 20, metadataY + 8);
         
-        // Simple table representation for PDF
+        // Create table data
         const headers = [
-            'نمای سه‌بعدی',
-            'شیار',
-            'نوار PVC عرض',
-            'نوار PVC طول',
-            'نوع قطعه',
-            'تعداد',
-            'ابعاد عرض',
-            'ابعاد طول',
-            'شماره پیوست'
+            ['نمای سه‌بعدی', 'شیار', 'نوار PVC عرض', 'نوار PVC طول', 'نوع قطعه', 'تعداد', 'ابعاد عرض', 'ابعاد طول', 'شماره پیوست']
         ];
         
-        // Get table data
-        const rows = [];
-        const tableRows = tableElement.querySelectorAll('tbody tr');
+        const tableData = [];
         
-        tableRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const rowData = [];
+        // Group cabinets by type for numbering
+        let cabinetCounts = { wall: 0, floor: 0 };
+        
+        AppState.cabinets.forEach(cabinet => {
+            cabinetCounts[cabinet.type]++;
+            const cabinetNumber = cabinetCounts[cabinet.type];
             
-            cells.forEach((cell, index) => {
-                if (index === 0) {
-                    // Skip 3D view column in PDF
-                    rowData.push('');
-                } else if (cell.querySelector('input')) {
-                    rowData.push(cell.querySelector('input').value || '');
-                } else {
-                    rowData.push(cell.textContent.trim());
-                }
+            cabinet.parts.forEach((part, index) => {
+                const rowData = [
+                    index === 0 ? `کابینت ${cabinet.typeName} ${cabinetNumber}\n${cabinet.width}×${cabinet.height}×${cabinet.depth}` : '',
+                    '',
+                    '',
+                    '',
+                    part.description,
+                    part.quantity.toString(),
+                    part.width.toString(),
+                    part.length.toString(),
+                    ''
+                ];
+                tableData.push(rowData);
             });
-            
-            rows.push(rowData);
         });
         
-        // Add table to PDF (simplified)
-        let yPos = 50;
-        pdf.setFontSize(10);
-        
-        // Add headers
-        const colWidths = [20, 15, 20, 20, 40, 15, 20, 20, 20];
-        let xPos = 20;
-        
-        headers.forEach((header, i) => {
-            pdf.text(header, xPos, yPos);
-            xPos += colWidths[i];
-        });
-        
-        yPos += 10;
-        
-        // Add rows
-        rows.forEach(row => {
-            xPos = 20;
-            row.forEach((cell, i) => {
-                pdf.text(cell || '', xPos, yPos);
-                xPos += colWidths[i];
-            });
-            yPos += 10;
-            
-            // Add new page if needed
-            if (yPos > 270) {
-                pdf.addPage();
-                yPos = 20;
+        // Configure table options
+        const tableConfig = {
+            startY: 60,
+            head: headers,
+            body: tableData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [93, 64, 55], // Wood dark color
+                textColor: 255,
+                fontStyle: 'bold',
+                fontSize: 9,
+                halign: 'center',
+                valign: 'middle'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: [44, 62, 80], // Primary color
+                cellPadding: 3,
+                halign: 'center',
+                valign: 'middle'
+            },
+            columnStyles: {
+                0: { cellWidth: 25, halign: 'right' }, // 3D View
+                1: { cellWidth: 12 }, // Groove
+                2: { cellWidth: 15 }, // PVC Width
+                3: { cellWidth: 15 }, // PVC Length
+                4: { cellWidth: 30, halign: 'right' }, // Description
+                5: { cellWidth: 12 }, // Quantity
+                6: { cellWidth: 15 }, // Dimensions Width
+                7: { cellWidth: 15 }, // Dimensions Length
+                8: { cellWidth: 20 } // Attachment
+            },
+            margin: { left: 10, right: 10 },
+            didDrawPage: function(data) {
+                // Footer
+                pdf.setFontSize(8);
+                pdf.setTextColor(128, 128, 128);
+                pdf.text('تولید شده توسط Aqua Drawer LAB - ساخته شده توسط ممد', 148, 200, { align: 'center' });
+                pdf.text(`صفحه ${pdf.internal.getNumberOfPages()}`, 290, 200, { align: 'right' });
             }
-        });
+        };
         
-        // Add footer
-        pdf.setFontSize(8);
-        pdf.text('Aqua Drawer LAB - تولید شده توسط ممد', 105, 285, { align: 'center' });
+        // Generate table
+        pdf.autoTable(tableConfig);
         
         // Save PDF
-        pdf.save(`جدول-ریزاندازه-${new Date().getTime()}.pdf`);
+        const fileName = `جدول-ریزاندازه-${new Date().getTime()}.pdf`;
+        pdf.save(fileName);
         
         // Restore button state
         domElements.pdfBtn.innerHTML = originalText;
         domElements.pdfBtn.disabled = false;
         
-        showSuccess('PDF با موفقیت تولید شد');
+        showSuccess('PDF با موفقیت تولید و ذخیره شد');
         
     } catch (error) {
         console.error('PDF export error:', error);
@@ -664,16 +1204,18 @@ function showSuccess(message) {
         top: 20px;
         left: 20px;
         right: 20px;
-        background-color: #27ae60;
+        background: linear-gradient(135deg, #27ae60, #229954);
         color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
+        padding: 16px 20px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(39, 174, 96, 0.3);
         animation: slideIn 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     `;
     
     document.body.appendChild(toast);
@@ -723,27 +1265,49 @@ function setupEventListeners() {
     });
     
     // Form actions
-    domElements.calculateBtn.addEventListener('click', generateResultsTable);
+    domElements.calculateBtn.addEventListener('click', generateCabinetTable);
+    domElements.addToTableBtn.addEventListener('click', addToTable);
     domElements.resetBtn.addEventListener('click', resetForm);
+    domElements.clearTableBtn.addEventListener('click', clearTable);
     domElements.printBtn.addEventListener('click', printTable);
     domElements.pdfBtn.addEventListener('click', exportToPDF);
     domElements.saveProjectBtn.addEventListener('click', saveProject);
     
-    // Update results subtitle on input changes
-    const inputsToWatch = [
+    // Update form validation on input
+    const formInputs = [
         domElements.cabinetWidth,
         domElements.cabinetHeight,
         domElements.cabinetDepth,
         domElements.shelfCount
     ];
     
-    inputsToWatch.forEach(input => {
-        input.addEventListener('input', updateResultsSubtitle);
+    formInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            // Remove error highlight when user starts typing
+            removeHighlight(this);
+        });
     });
     
-    // Cabinet type change
+    // Real-time cabinet type change
     domElements.cabinetType.forEach(radio => {
-        radio.addEventListener('change', updateResultsSubtitle);
+        radio.addEventListener('change', function() {
+            const isWallCabinet = this.value === 'wall';
+            const shelfInput = domElements.shelfCount;
+            
+            // Update hint based on cabinet type
+            if (!isWallCabinet) {
+                // Floor cabinet - max 1 shelf
+                if (parseInt(shelfInput.value) > 1) {
+                    shelfInput.value = 1;
+                }
+                shelfInput.max = 1;
+                shelfInput.parentElement.querySelector('.hint').textContent = '(فقط ۰ یا ۱ طبقه برای کابینت زمینی)';
+            } else {
+                // Wall cabinet - up to 20 shelves
+                shelfInput.max = 20;
+                shelfInput.parentElement.querySelector('.hint').textContent = '(۰ تا ۲۰ طبقه)';
+            }
+        });
     });
     
     // Keyboard shortcuts
@@ -751,7 +1315,13 @@ function setupEventListeners() {
         // Ctrl/Cmd + Enter to calculate
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            generateResultsTable();
+            generateCabinetTable();
+        }
+        
+        // Ctrl/Cmd + A to add to table
+        if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+            e.preventDefault();
+            addToTable();
         }
         
         // Escape to close sidebar
@@ -760,6 +1330,34 @@ function setupEventListeners() {
             domElements.sidebar.classList.remove('active');
         }
     });
+    
+    // Prevent form submission on Enter key in inputs
+    document.querySelectorAll('input[type="number"], input[type="text"]').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Focus on next input or calculate
+                const form = input.closest('form') || input.closest('.form-grid');
+                const inputs = form ? Array.from(form.querySelectorAll('input')) : [];
+                const currentIndex = inputs.indexOf(input);
+                
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                } else {
+                    generateCabinetTable();
+                }
+            }
+        });
+    });
+    
+    // Auto-update date when it's empty
+    domElements.projectDate.addEventListener('focus', function() {
+        if (!this.value.trim()) {
+            this.value = convertToPersianDate(new Date());
+        }
+    });
+    
+    console.log('All event listeners set up successfully');
 }
 
 // Initialize the app when DOM is loaded

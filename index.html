@@ -34,7 +34,7 @@
                         </button>
                     </div>
                     <div class="header-info">
-                        <span class="app-subtitle">ابزار محاسبه ریزاندازه کابینت بدون درب</span>
+                        <span class="app-subtitle">ابزار تخصصی تجزیه باکس کابینت به قطعات قابل تولید</span>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     <section class="card input-section" id="input-section">
                         <div class="card-header">
                             <h2><i class="mdi mdi-tape-measure"></i> مشخصات کابینت</h2>
-                            <p class="card-subtitle">لطفاً ابعاد کابینت را وارد کنید (واحد: سانتی‌متر)</p>
+                            <p class="card-subtitle">ابعاد کابینت را وارد کنید (واحد: سانتی‌متر - ضخامت ورق: ۱.۶ سانتی‌متر)</p>
                         </div>
                         
                         <div class="card-body">
@@ -82,10 +82,10 @@
                                         عرض کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetWidth" min="30" max="200" step="0.5" value="80">
+                                        <input type="number" id="cabinetWidth" min="30" max="200" step="0.1" value="80.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(30 تا 200 سانتی‌متر)</div>
+                                    <div class="hint">(۳۰ تا ۲۰۰ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -94,10 +94,10 @@
                                         ارتفاع کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetHeight" min="30" max="300" step="0.5" value="120">
+                                        <input type="number" id="cabinetHeight" min="30" max="300" step="0.1" value="120.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(30 تا 300 سانتی‌متر)</div>
+                                    <div class="hint">(۳۰ تا ۳۰۰ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -106,10 +106,10 @@
                                         عمق کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetDepth" min="30" max="100" step="0.5" value="55">
+                                        <input type="number" id="cabinetDepth" min="30" max="100" step="0.1" value="55.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(پیش‌فرض: 55 سانتی‌متر)</div>
+                                    <div class="hint">(پیش‌فرض: ۵۵ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -121,7 +121,7 @@
                                         <input type="number" id="shelfCount" min="0" max="20" step="1" value="2">
                                         <span class="unit">عدد</span>
                                     </div>
-                                    <div class="hint">(0 تا 20 طبقه)</div>
+                                    <div class="hint">(۰ تا ۲۰ طبقه)</div>
                                 </div>
                                 
                                 <!-- Cabinet Type -->
@@ -134,12 +134,12 @@
                                         <label class="radio-label">
                                             <input type="radio" name="cabinetType" id="wallCabinet" value="wall" checked>
                                             <span class="radio-custom"></span>
-                                            <span class="radio-text">کابینت دیواری</span>
+                                            <span class="radio-text">کابینت دیواری (باکس هوایی)</span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="cabinetType" id="floorCabinet" value="floor">
                                             <span class="radio-custom"></span>
-                                            <span class="radio-text">کابینت زمینی</span>
+                                            <span class="radio-text">کابینت زمینی (باکس زمینی)</span>
                                         </label>
                                     </div>
                                 </div>
@@ -176,19 +176,27 @@
                                     <i class="mdi mdi-calculator"></i>
                                     محاسبه جدول
                                 </button>
+                                <button class="btn btn-success" id="addToTableBtn">
+                                    <i class="mdi mdi-plus-box"></i>
+                                    افزودن به جدول
+                                </button>
                                 <button class="btn btn-secondary" id="resetBtn">
                                     <i class="mdi mdi-refresh"></i>
                                     بازنشانی فرم
+                                </button>
+                                <button class="btn btn-danger" id="clearTableBtn">
+                                    <i class="mdi mdi-table-remove"></i>
+                                    پاک کردن جدول
                                 </button>
                             </div>
                         </div>
                     </section>
 
                     <!-- Results Section -->
-                    <section class="card results-section" id="results-section" style="display: none;">
+                    <section class="card results-section" id="results-section">
                         <div class="card-header">
                             <h2><i class="mdi mdi-table"></i> جدول ریزاندازه جهت کات مستر</h2>
-                            <p class="card-subtitle" id="resultsSubtitle">مشخصات کابینت محاسبه شده</p>
+                            <p class="card-subtitle" id="resultsSubtitle">لیست تمام کابینت‌های محاسبه شده</p>
                         </div>
                         
                         <div class="card-body">
@@ -196,15 +204,19 @@
                             <div class="results-metadata">
                                 <div class="metadata-item">
                                     <span class="metadata-label">استادکار:</span>
-                                    <span class="metadata-value" id="resultCraftsman">-</span>
+                                    <span class="metadata-value" id="resultCraftsman">تعیین نشده</span>
                                 </div>
                                 <div class="metadata-item">
                                     <span class="metadata-label">مشتری:</span>
-                                    <span class="metadata-value" id="resultClient">-</span>
+                                    <span class="metadata-value" id="resultClient">تعیین نشده</span>
                                 </div>
                                 <div class="metadata-item">
                                     <span class="metadata-label">تاریخ:</span>
                                     <span class="metadata-value" id="resultDate">-</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">تعداد کابینت‌ها:</span>
+                                    <span class="metadata-value" id="cabinetCount">0</span>
                                 </div>
                             </div>
                             
@@ -230,6 +242,15 @@
                                     </thead>
                                     <tbody id="tableBody">
                                         <!-- Table rows will be generated here -->
+                                        <tr class="empty-table-message">
+                                            <td colspan="9">
+                                                <div class="empty-state">
+                                                    <i class="mdi mdi-table-large"></i>
+                                                    <p>هنوز کابینتی به جدول اضافه نشده است</p>
+                                                    <small>از دکمه "محاسبه جدول" یا "افزودن به جدول" استفاده کنید</small>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -285,7 +306,7 @@
                                     <div class="step-number">1</div>
                                     <div class="step-content">
                                         <h4>وارد کردن ابعاد</h4>
-                                        <p>ابعاد کابینت را بر حسب سانتی‌متر وارد کنید. عمق پیش‌فرض 55 سانتی‌متر است.</p>
+                                        <p>ابعاد کابینت را بر حسب سانتی‌متر وارد کنید. دقت کنید که ضخامت ورق ۱.۶ سانتی‌متر در محاسبات لحاظ می‌شود.</p>
                                     </div>
                                 </div>
                                 
@@ -293,15 +314,15 @@
                                     <div class="step-number">2</div>
                                     <div class="step-content">
                                         <h4>انتخاب نوع کابینت</h4>
-                                        <p>نوع کابینت (دیواری یا زمینی) را انتخاب کنید. کابینت‌های دیواری دارای صفحه رویه هستند.</p>
+                                        <p>نوع کابینت (دیواری یا زمینی) را انتخاب کنید. فرمول‌های محاسباتی برای هر نوع متفاوت است.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="instruction-step">
                                     <div class="step-number">3</div>
                                     <div class="step-content">
-                                        <h4>محاسبه جدول</h4>
-                                        <p>دکمه "محاسبه جدول" را بزنید تا جدول ریزاندازه‌ها تولید شود.</p>
+                                        <h4>محاسبه و افزودن به جدول</h4>
+                                        <p>از دکمه "محاسبه جدول" برای مشاهده نتیجه یا "افزودن به جدول" برای اضافه کردن چندین کابینت استفاده کنید.</p>
                                     </div>
                                 </div>
                                 
@@ -309,19 +330,33 @@
                                     <div class="step-number">4</div>
                                     <div class="step-content">
                                         <h4>دریافت خروجی</h4>
-                                        <p>جدول را چاپ کنید یا به صورت PDF ذخیره نمایید.</p>
+                                        <p>جدول نهایی را چاپ کنید یا به صورت PDF ذخیره نمایید.</p>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="formulas-info">
                                 <h4><i class="mdi mdi-math-compass"></i> فرمول‌های محاسباتی</h4>
-                                <ul>
-                                    <li><strong>دیواره جانبی:</strong> ارتفاع × عمق</li>
-                                    <li><strong>طبقات:</strong> (عرض - 3.2) × (عمق - 2)</li>
-                                    <li><strong>صفحه رویه (کابینت دیواری):</strong> (عرض - 3.2) × عمق</li>
-                                </ul>
-                                <p class="note">تمامی ابعاد بر حسب سانتی‌متر می‌باشند.</p>
+                                <div class="formulas-grid">
+                                    <div class="formula-card">
+                                        <h5>کابینت دیواری (باکس هوایی)</h5>
+                                        <ul>
+                                            <li><strong>بدنه (۲ عدد):</strong> ارتفاع × عمق</li>
+                                            <li><strong>سقف و کف (۲ عدد):</strong> (عرض - ۳.۲) × عمق</li>
+                                            <li><strong>طبقه (n عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
+                                        </ul>
+                                    </div>
+                                    <div class="formula-card">
+                                        <h5>کابینت زمینی (باکس زمینی)</h5>
+                                        <ul>
+                                            <li><strong>بدنه (۲ عدد):</strong> (ارتفاع - ۱.۶) × عمق</li>
+                                            <li><strong>کف (۱ عدد):</strong> عرض × عمق</li>
+                                            <li><strong>تیرک (۲ عدد):</strong> (عرض - ۳.۲) × ۱۲</li>
+                                            <li><strong>طبقه (۱ عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="note">تمامی ابعاد بر حسب سانتی‌متر و با دقت یک رقم اعشار محاسبه می‌شوند.</p>
                             </div>
                         </div>
                     </section>
@@ -340,7 +375,7 @@
                         <span>Aqua Drawer LAB</span>
                     </div>
                     <p class="footer-description">
-                        ابزار تخصصی محاسبه ریزاندازه کابینت بدون درب برای کارگاه‌های تولیدی
+                        ابزار تخصصی تجزیه باکس کابینت به قطعات قابل تولید برای کارگاه‌های صنایع چوب
                     </p>
                 </div>
                 
