@@ -172,10 +172,22 @@
                                     <div class="hint" id="shelfHint">(۰ تا ۲۰ طبقه)</div>
                                 </div>
 
-                                <!-- Stretcher Height for Ground Cabinet -->
-                                <div class="form-group" id="stretcherGroup" style="display: none;">
-                                    <label for="stretcherHeight">
+                                <!-- Stretcher Inputs (For All Cabinet Types) -->
+                                <div class="form-group">
+                                    <label for="stretcherQuantity">
                                         <i class="mdi mdi-ruler"></i>
+                                        تعداد تیرک
+                                    </label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="stretcherQuantity" min="0" max="10" step="1" value="0">
+                                        <span class="unit">عدد</span>
+                                    </div>
+                                    <div class="hint">(۰ تا ۱۰ تیرک)</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="stretcherHeight">
+                                        <i class="mdi mdi-ruler-square"></i>
                                         ارتفاع تیرک
                                     </label>
                                     <div class="input-with-unit">
@@ -183,19 +195,6 @@
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
                                     <div class="hint">(۸ تا ۲۰ سانتی‌متر)</div>
-                                </div>
-
-                                <!-- Back Panel Height Offset -->
-                                <div class="form-group" id="backPanelGroup">
-                                    <label for="backPanelOffset">
-                                        <i class="mdi mdi-panel"></i>
-                                        آفست سه‌میل
-                                    </label>
-                                    <div class="input-with-unit">
-                                        <input type="number" id="backPanelOffset" min="0.5" max="3" step="0.1" value="1.6">
-                                        <span class="unit">سانتی‌متر</span>
-                                    </div>
-                                    <div class="hint">(۰.۵ تا ۳ سانتی‌متر)</div>
                                 </div>
                                 
                                 <!-- Metadata -->
@@ -287,6 +286,11 @@
                                         <div class="dimension-display">
                                             <span class="dim-label">تعداد طبقات:</span>
                                             <span class="dim-value" id="previewShelves">2</span>
+                                            <span class="dim-unit">عدد</span>
+                                        </div>
+                                        <div class="dimension-display">
+                                            <span class="dim-label">تعداد تیرک:</span>
+                                            <span class="dim-value" id="previewStretchers">0</span>
                                             <span class="dim-unit">عدد</span>
                                         </div>
                                     </div>
@@ -507,6 +511,7 @@
                                             <li><strong>سقف و کف (۲ عدد):</strong> (عرض - ۳.۲) × عمق</li>
                                             <li><strong>طبقه (n عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
                                             <li><strong>سه‌میل (۱ عدد):</strong> (عرض - ۱.۶) × (ارتفاع - ۱.۶)</li>
+                                            <li><strong>تیرک (اختیاری):</strong> (عرض - ۳.۲) × ارتفاع تیرک</li>
                                         </ul>
                                     </div>
                                     <div class="formula-card" id="groundFormulas">
@@ -514,7 +519,7 @@
                                         <ul>
                                             <li><strong>بدنه (۲ عدد):</strong> (ارتفاع - ۱.۶) × عمق</li>
                                             <li><strong>کف (۱ عدد):</strong> عرض × عمق</li>
-                                            <li><strong>تیرک (۲ عدد):</strong> (عرض - ۳.۲) × ۱۲</li>
+                                            <li><strong>تیرک (۲ عدد):</strong> (عرض - ۳.۲) × ارتفاع تیرک</li>
                                             <li><strong>طبقه (۱ عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
                                             <li><strong>سه‌میل (۱ عدد):</strong> (عرض - ۱.۶) × (ارتفاع - ۰.۹)</li>
                                         </ul>

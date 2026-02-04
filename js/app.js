@@ -1,5 +1,5 @@
 // Aqua Drawer LAB - Cabinet Cutting Calculator
-// Version 2.0 - Complete Rewrite
+// Version 2.0 - Complete Rewrite with New Features
 // By_zZzMohammadzZz
 
 // Application State Management
@@ -33,10 +33,8 @@ const DOM = {
     cabinetHeight: document.getElementById('cabinetHeight'),
     cabinetDepth: document.getElementById('cabinetDepth'),
     shelfCount: document.getElementById('shelfCount'),
+    stretcherQuantity: document.getElementById('stretcherQuantity'),
     stretcherHeight: document.getElementById('stretcherHeight'),
-    stretcherGroup: document.getElementById('stretcherGroup'),
-    backPanelOffset: document.getElementById('backPanelOffset'),
-    backPanelGroup: document.getElementById('backPanelGroup'),
     cabinetTypeRadios: document.querySelectorAll('input[name="cabinetType"]'),
     craftsmanName: document.getElementById('craftsmanName'),
     clientName: document.getElementById('clientName'),
@@ -82,6 +80,7 @@ const DOM = {
     previewHeight: document.getElementById('previewHeight'),
     previewDepth: document.getElementById('previewDepth'),
     previewShelves: document.getElementById('previewShelves'),
+    previewStretchers: document.getElementById('previewStretchers'),
     
     // Projects
     projectsList: document.getElementById('projectsList'),
@@ -95,11 +94,13 @@ const DOM = {
 const CONSTANTS = {
     BOARD_THICKNESS: 1.6,
     PVC_EDGE_THICKNESS: 0.2,
-    DEFAULT_AERIAL: { width: 41, height: 97, depth: 35, shelves: 2 },
-    DEFAULT_GROUND: { width: 49, height: 77.1, depth: 55, shelves: 1, stretcher: 12 },
+    DEFAULT_AERIAL: { width: 41, height: 97, depth: 35, shelves: 2, stretcherQty: 0, stretcherHeight: 12 },
+    DEFAULT_GROUND: { width: 49, height: 77.1, depth: 55, shelves: 1, stretcherQty: 2, stretcherHeight: 12 },
     MIN_DIMENSIONS: { width: 30, height: 30, depth: 30 },
     MAX_DIMENSIONS: { width: 200, height: 300, depth: 100 },
-    MAX_SHELVES: { aerial: 20, ground: 1 }
+    MAX_SHELVES: { aerial: 20, ground: 1 },
+    BACK_PANEL_OFFSET_AERIAL: 1.6,
+    BACK_PANEL_OFFSET_GROUND: 0.9
 };
 
 // Initialize Application
@@ -187,6 +188,8 @@ function setupEventListeners() {
     DOM.cabinetHeight.addEventListener('input', validateDimensions);
     DOM.cabinetDepth.addEventListener('input', validateDimensions);
     DOM.shelfCount.addEventListener('input', validateShelves);
+    DOM.stretcherQuantity.addEventListener('input', validateStretcherQuantity);
+    DOM.stretcherHeight.addEventListener('input', validateStretcherHeight);
     
     // Quick actions
     DOM.quickBtns.forEach(btn => {
@@ -272,12 +275,16 @@ function handleCabinetTypeChange() {
         DOM.cabinetHeight.value = CONSTANTS.DEFAULT_AERIAL.height;
         DOM.cabinetDepth.value = CONSTANTS.DEFAULT_AERIAL.depth;
         DOM.shelfCount.value = CONSTANTS.DEFAULT_AERIAL.shelves;
+        DOM.stretcherQuantity.value = CONSTANTS.DEFAULT_AERIAL.stretcherQty;
+        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_AERIAL.stretcherHeight;
         DOM.shelfHint.textContent = `(۰ تا ${CONSTANTS.MAX_SHELVES.aerial} طبقه)`;
     } else {
         DOM.cabinetWidth.value = CONSTANTS.DEFAULT_GROUND.width;
         DOM.cabinetHeight.value = CONSTANTS.DEFAULT_GROUND.height;
         DOM.cabinetDepth.value = CONSTANTS.DEFAULT_GROUND.depth;
         DOM.shelfCount.value = CONSTANTS.DEFAULT_GROUND.shelves;
+        DOM.stretcherQuantity.value = CONSTANTS.DEFAULT_GROUND.stretcherQty;
+        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_GROUND.stretcherHeight;
         DOM.shelfHint.textContent = `(فقط ۰ یا ${CONSTANTS.MAX_SHELVES.ground} طبقه)`;
     }
     
@@ -290,18 +297,10 @@ function handleCabinetTypeChange() {
 function updateCabinetTypeUI() {
     const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
     
-    // Show/hide stretcher input
-    DOM.stretcherGroup.style.display = isAerial ? 'none' : 'block';
-    
-    // Update back panel offset hint
-    const offsetHint = DOM.backPanelGroup.querySelector('.hint');
-    offsetHint.textContent = isAerial ? 
-        '(۰.۵ تا ۳ سانتی‌متر - پیش‌فرض: ۱.۶)' : 
-        '(۰.۵ تا ۳ سانتی‌متر - پیش‌فرض: ۰.۹)';
-    
-    if (!isAerial) {
-        DOM.backPanelOffset.value = '0.9';
-    }
+    // Update shelf hint
+    DOM.shelfHint.textContent = isAerial ? 
+        `(۰ تا ${CONSTANTS.MAX_SHELVES.aerial} طبقه)` : 
+        `(فقط ۰ یا ${CONSTANTS.MAX_SHELVES.ground} طبقه)`;
 }
 
 // Date Handling
@@ -370,6 +369,30 @@ function validateShelves() {
     }
 }
 
+function validateStretcherQuantity() {
+    const quantity = parseInt(DOM.stretcherQuantity.value);
+    
+    if (quantity < 0 || quantity > 10) {
+        highlightInvalid(DOM.stretcherQuantity);
+        return false;
+    } else {
+        removeHighlight(DOM.stretcherQuantity);
+        return true;
+    }
+}
+
+function validateStretcherHeight() {
+    const height = parseFloat(DOM.stretcherHeight.value);
+    
+    if (height < 8 || height > 20) {
+        highlightInvalid(DOM.stretcherHeight);
+        return false;
+    } else {
+        removeHighlight(DOM.stretcherHeight);
+        return true;
+    }
+}
+
 function highlightInvalid(element) {
     element.parentElement.style.borderColor = 'var(--accent-color)';
     element.parentElement.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.2)';
@@ -398,10 +421,24 @@ function handleQuickAction(e) {
 }
 
 function resetForm() {
-    DOM.cabinetWidth.value = '';
-    DOM.cabinetHeight.value = '';
-    DOM.cabinetDepth.value = '';
-    DOM.shelfCount.value = '2';
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    
+    if (isAerial) {
+        DOM.cabinetWidth.value = '';
+        DOM.cabinetHeight.value = '';
+        DOM.cabinetDepth.value = '';
+        DOM.shelfCount.value = '2';
+        DOM.stretcherQuantity.value = '0';
+        DOM.stretcherHeight.value = '12';
+    } else {
+        DOM.cabinetWidth.value = '';
+        DOM.cabinetHeight.value = '';
+        DOM.cabinetDepth.value = '';
+        DOM.shelfCount.value = '1';
+        DOM.stretcherQuantity.value = '2';
+        DOM.stretcherHeight.value = '12';
+    }
+    
     DOM.craftsmanName.value = '';
     DOM.clientName.value = '';
     setCurrentDate();
@@ -411,6 +448,8 @@ function resetForm() {
     removeHighlight(DOM.cabinetHeight);
     removeHighlight(DOM.cabinetDepth);
     removeHighlight(DOM.shelfCount);
+    removeHighlight(DOM.stretcherQuantity);
+    removeHighlight(DOM.stretcherHeight);
     
     showToast('فرم بازنشانی شد', 'همه مقادیر به حالت اولیه بازگشتند', 'info');
 }
@@ -423,12 +462,15 @@ function loadDefaults() {
         DOM.cabinetHeight.value = CONSTANTS.DEFAULT_AERIAL.height;
         DOM.cabinetDepth.value = CONSTANTS.DEFAULT_AERIAL.depth;
         DOM.shelfCount.value = CONSTANTS.DEFAULT_AERIAL.shelves;
+        DOM.stretcherQuantity.value = CONSTANTS.DEFAULT_AERIAL.stretcherQty;
+        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_AERIAL.stretcherHeight;
     } else {
         DOM.cabinetWidth.value = CONSTANTS.DEFAULT_GROUND.width;
         DOM.cabinetHeight.value = CONSTANTS.DEFAULT_GROUND.height;
         DOM.cabinetDepth.value = CONSTANTS.DEFAULT_GROUND.depth;
         DOM.shelfCount.value = CONSTANTS.DEFAULT_GROUND.shelves;
-        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_GROUND.stretcher;
+        DOM.stretcherQuantity.value = CONSTANTS.DEFAULT_GROUND.stretcherQty;
+        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_GROUND.stretcherHeight;
     }
     
     showToast('مقادیر پیش‌فرض بارگذاری شد', 'ابعاد استاندارد کابینت اعمال شد', 'success');
@@ -451,13 +493,14 @@ function calculateCabinetParts() {
     const height = parseFloat(DOM.cabinetHeight.value);
     const depth = parseFloat(DOM.cabinetDepth.value);
     const shelves = parseInt(DOM.shelfCount.value);
-    const stretcherHeight = parseFloat(DOM.stretcherHeight.value) || 12;
-    const backPanelOffset = parseFloat(DOM.backPanelOffset.value) || (isAerial ? 1.6 : 0.9);
+    const stretcherQty = parseInt(DOM.stretcherQuantity.value);
+    const stretcherHeight = parseFloat(DOM.stretcherHeight.value);
     
     const parts = [];
     
     if (isAerial) {
         // Aerial Cabinet Parts
+        // Body (2 pieces)
         parts.push({
             id: `body_${Date.now()}`,
             description: 'بدنه',
@@ -469,6 +512,7 @@ function calculateCabinetParts() {
             notes: ''
         });
         
+        // Top and Bottom (2 pieces)
         parts.push({
             id: `top_bottom_${Date.now()}`,
             description: 'سقف و کف',
@@ -480,6 +524,7 @@ function calculateCabinetParts() {
             notes: ''
         });
         
+        // Shelves
         for (let i = 1; i <= shelves; i++) {
             parts.push({
                 id: `shelf_${i}_${Date.now()}`,
@@ -493,13 +538,27 @@ function calculateCabinetParts() {
             });
         }
         
-        // Back panel (سه میل)
+        // Stretchers (if any)
+        if (stretcherQty > 0) {
+            parts.push({
+                id: `stretcher_${Date.now()}`,
+                description: 'تیرک',
+                quantity: stretcherQty,
+                width: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+                height: stretcherHeight,
+                groove: false,
+                pvc: 'both',
+                notes: ''
+            });
+        }
+        
+        // Back panel (سه میل) - Fixed calculation
         parts.push({
             id: `back_panel_${Date.now()}`,
             description: 'سه میل',
             quantity: 1,
             width: (width - CONSTANTS.BOARD_THICKNESS).toFixed(1),
-            height: (height - backPanelOffset).toFixed(1),
+            height: (height - CONSTANTS.BACK_PANEL_OFFSET_AERIAL).toFixed(1),
             groove: false,
             pvc: 'none',
             notes: 'ضخامت ۳ میلی‌متر'
@@ -507,6 +566,7 @@ function calculateCabinetParts() {
         
     } else {
         // Ground Cabinet Parts
+        // Body (2 pieces)
         parts.push({
             id: `body_${Date.now()}`,
             description: 'بدنه',
@@ -518,6 +578,7 @@ function calculateCabinetParts() {
             notes: ''
         });
         
+        // Bottom (1 piece)
         parts.push({
             id: `bottom_${Date.now()}`,
             description: 'کف',
@@ -529,17 +590,21 @@ function calculateCabinetParts() {
             notes: ''
         });
         
-        parts.push({
-            id: `stretcher_${Date.now()}`,
-            description: 'تیرک',
-            quantity: 2,
-            width: stretcherHeight,
-            height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
-            groove: false,
-            pvc: 'both',
-            notes: ''
-        });
+        // Stretchers
+        if (stretcherQty > 0) {
+            parts.push({
+                id: `stretcher_${Date.now()}`,
+                description: 'تیرک',
+                quantity: stretcherQty,
+                width: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+                height: stretcherHeight,
+                groove: false,
+                pvc: 'both',
+                notes: ''
+            });
+        }
         
+        // Shelf (if any)
         if (shelves > 0) {
             parts.push({
                 id: `shelf_${Date.now()}`,
@@ -553,13 +618,13 @@ function calculateCabinetParts() {
             });
         }
         
-        // Back panel (سه میل)
+        // Back panel (سه میل) - Fixed calculation
         parts.push({
             id: `back_panel_${Date.now()}`,
             description: 'سه میل',
             quantity: 1,
             width: (width - CONSTANTS.BOARD_THICKNESS).toFixed(1),
-            height: (height - backPanelOffset).toFixed(1),
+            height: (height - CONSTANTS.BACK_PANEL_OFFSET_GROUND).toFixed(1),
             groove: false,
             pvc: 'none',
             notes: 'ضخامت ۳ میلی‌متر'
@@ -571,7 +636,7 @@ function calculateCabinetParts() {
 
 // 3D Preview Functions
 function show3DPreview() {
-    if (!validateDimensions() || !validateShelves()) {
+    if (!validateDimensions() || !validateShelves() || !validateStretcherQuantity() || !validateStretcherHeight()) {
         showToast('خطا در ابعاد', 'لطفاً ابعاد معتبر وارد کنید', 'error');
         return;
     }
@@ -581,6 +646,7 @@ function show3DPreview() {
     DOM.previewHeight.textContent = DOM.cabinetHeight.value;
     DOM.previewDepth.textContent = DOM.cabinetDepth.value;
     DOM.previewShelves.textContent = DOM.shelfCount.value;
+    DOM.previewStretchers.textContent = DOM.stretcherQuantity.value;
     
     // Generate SVG
     generate3DSVG();
@@ -601,6 +667,7 @@ function generate3DSVG() {
     const height = parseFloat(DOM.cabinetHeight.value);
     const depth = parseFloat(DOM.cabinetDepth.value);
     const shelves = parseInt(DOM.shelfCount.value);
+    const stretcherQty = parseInt(DOM.stretcherQuantity.value);
     
     // Clear previous SVG
     DOM.preview3DSVG.innerHTML = '';
@@ -611,11 +678,12 @@ function generate3DSVG() {
     svg.setAttribute("viewBox", "0 0 400 300");
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     
-    // Colors based on theme
+    // Colors based on theme - High contrast for dark mode
     const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
     const fillColor = AppState.currentTheme === 'dark' ? '#34495e' : '#f8f9fa';
     const accentColor = '#e74c3c';
-    const woodColor = '#8b4513';
+    const woodColor = AppState.currentTheme === 'dark' ? '#c19a6b' : '#8b4513';
+    const textColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
     
     // Main cabinet rectangle (front view)
     const frontRect = document.createElementNS(svgNS, "rect");
@@ -667,7 +735,24 @@ function generate3DSVG() {
         }
     }
     
-    // Dimension labels
+    // Stretcher representation (if any)
+    if (stretcherQty > 0) {
+        for (let i = 1; i <= Math.min(stretcherQty, 3); i++) {
+            const stretcherY = 50 + (i * 40);
+            const stretcher = document.createElementNS(svgNS, "rect");
+            stretcher.setAttribute("x", "60");
+            stretcher.setAttribute("y", stretcherY);
+            stretcher.setAttribute("width", "180");
+            stretcher.setAttribute("height", "8");
+            stretcher.setAttribute("fill", woodColor);
+            stretcher.setAttribute("stroke", strokeColor);
+            stretcher.setAttribute("stroke-width", "1");
+            stretcher.setAttribute("rx", "2");
+            svg.appendChild(stretcher);
+        }
+    }
+    
+    // Dimension labels with high contrast
     const addDimensionLabel = (text, x1, y1, x2, y2, offsetX = 0, offsetY = 0) => {
         // Line
         const line = document.createElementNS(svgNS, "line");
@@ -675,7 +760,7 @@ function generate3DSVG() {
         line.setAttribute("y1", y1);
         line.setAttribute("x2", x2);
         line.setAttribute("y2", y2);
-        line.setAttribute("stroke", strokeColor);
+        line.setAttribute("stroke", textColor);
         line.setAttribute("stroke-width", "1");
         line.setAttribute("stroke-dasharray", "3,3");
         svg.appendChild(line);
@@ -683,21 +768,30 @@ function generate3DSVG() {
         // Arrow heads
         const arrow1 = document.createElementNS(svgNS, "polygon");
         arrow1.setAttribute("points", `${x1},${y1} ${x1-5},${y1-5} ${x1+5},${y1-5}`);
-        arrow1.setAttribute("fill", strokeColor);
+        arrow1.setAttribute("fill", textColor);
         svg.appendChild(arrow1);
         
         const arrow2 = document.createElementNS(svgNS, "polygon");
         arrow2.setAttribute("points", `${x2},${y2} ${x2-5},${y2-5} ${x2+5},${y2-5}`);
-        arrow2.setAttribute("fill", strokeColor);
+        arrow2.setAttribute("fill", textColor);
         svg.appendChild(arrow2);
         
-        // Text
+        // Text with background for better contrast
+        const textBg = document.createElementNS(svgNS, "rect");
+        textBg.setAttribute("x", (x1 + x2) / 2 + offsetX - 35);
+        textBg.setAttribute("y", (y1 + y2) / 2 + offsetY - 12);
+        textBg.setAttribute("width", "70");
+        textBg.setAttribute("height", "24");
+        textBg.setAttribute("fill", AppState.currentTheme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)');
+        textBg.setAttribute("rx", "4");
+        svg.appendChild(textBg);
+        
         const textEl = document.createElementNS(svgNS, "text");
         textEl.setAttribute("x", (x1 + x2) / 2 + offsetX);
         textEl.setAttribute("y", (y1 + y2) / 2 + offsetY);
         textEl.setAttribute("text-anchor", "middle");
         textEl.setAttribute("dominant-baseline", "middle");
-        textEl.setAttribute("fill", strokeColor);
+        textEl.setAttribute("fill", textColor);
         textEl.setAttribute("font-size", "14");
         textEl.setAttribute("font-weight", "bold");
         textEl.textContent = text;
@@ -721,6 +815,7 @@ function generate3DSVG() {
     typeText.setAttribute("fill", accentColor);
     typeText.setAttribute("font-size", "16");
     typeText.setAttribute("font-weight", "bold");
+    typeText.setAttribute("style", "font-family: 'Vazirmatn', sans-serif;");
     typeText.textContent = isAerial ? "کابینت دیواری (باکس هوایی)" : "کابینت زمینی (باکس زمینی)";
     svg.appendChild(typeText);
     
@@ -729,7 +824,7 @@ function generate3DSVG() {
 
 // Table Management
 function calculateAndShow() {
-    if (!validateDimensions() || !validateShelves()) {
+    if (!validateDimensions() || !validateShelves() || !validateStretcherQuantity() || !validateStretcherHeight()) {
         showToast('خطا در اعتبارسنجی', 'لطفاً تمام فیلدها را به درستی پر کنید', 'error');
         return;
     }
@@ -743,7 +838,7 @@ function calculateAndShow() {
 }
 
 function addToTable() {
-    if (!validateDimensions() || !validateShelves()) {
+    if (!validateDimensions() || !validateShelves() || !validateStretcherQuantity() || !validateStretcherHeight()) {
         showToast('خطا در اعتبارسنجی', 'لطفاً تمام فیلدها را به درستی پر کنید', 'error');
         return;
     }
@@ -762,6 +857,8 @@ function createCabinetObject() {
     const height = parseFloat(DOM.cabinetHeight.value);
     const depth = parseFloat(DOM.cabinetDepth.value);
     const shelves = parseInt(DOM.shelfCount.value);
+    const stretcherQty = parseInt(DOM.stretcherQuantity.value);
+    const stretcherHeight = parseFloat(DOM.stretcherHeight.value);
     const craftsman = DOM.craftsmanName.value || 'تعیین نشده';
     const client = DOM.clientName.value || 'تعیین نشده';
     const date = DOM.projectDate.value || convertToPersianDate(new Date());
@@ -774,6 +871,8 @@ function createCabinetObject() {
         height,
         depth,
         shelves,
+        stretcherQty,
+        stretcherHeight,
         parts: calculateCabinetParts(),
         craftsman,
         client,
@@ -784,6 +883,17 @@ function createCabinetObject() {
 }
 
 function updateResultsDisplay() {
+    if (AppState.cabinets.length === 0) {
+        DOM.resultCraftsman.textContent = 'تعیین نشده';
+        DOM.resultClient.textContent = 'تعیین نشده';
+        DOM.resultDate.textContent = '-';
+        DOM.cabinetCount.textContent = '0';
+        DOM.resultsSubtitle.textContent = 'لیست تمام کابینت‌های محاسبه شده';
+        DOM.totalParts.textContent = '0';
+        DOM.totalArea.textContent = '0';
+        return;
+    }
+    
     const lastCabinet = AppState.cabinets[AppState.cabinets.length - 1];
     
     DOM.resultCraftsman.textContent = lastCabinet.craftsman;
@@ -803,12 +913,18 @@ function updateResultsDisplay() {
         });
     });
     
+    // Add custom rows
+    AppState.customRows.forEach(row => {
+        totalParts += row.quantity;
+        totalArea += (row.width * row.height * row.quantity) / 10000;
+    });
+    
     DOM.totalParts.textContent = totalParts;
     DOM.totalArea.textContent = totalArea.toFixed(2);
 }
 
 function renderTable() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         DOM.tableBody.innerHTML = `
             <tr class="empty-table-message">
                 <td colspan="9">
@@ -928,9 +1044,10 @@ function generateTable3DSVG(cabinet) {
     svg.setAttribute("viewBox", "0 0 150 100");
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     
-    // Colors
+    // Colors with high contrast for dark mode
     const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
     const fillColor = AppState.currentTheme === 'dark' ? '#2c3e50' : '#f8f9fa';
+    const accentColor = '#e74c3c';
     
     // Simplified cabinet representation
     const rect = document.createElementNS(svgNS, "rect");
@@ -953,7 +1070,7 @@ function generateTable3DSVG(cabinet) {
             shelf.setAttribute("y1", shelfY);
             shelf.setAttribute("x2", "125");
             shelf.setAttribute("y2", shelfY);
-            shelf.setAttribute("stroke", "#e74c3c");
+            shelf.setAttribute("stroke", accentColor);
             shelf.setAttribute("stroke-width", "1");
             shelf.setAttribute("stroke-dasharray", "3,3");
             svg.appendChild(shelf);
@@ -981,6 +1098,7 @@ function addTableEventListeners() {
             const row = this.closest('tr');
             const cabinetId = row.dataset.cabinetId;
             const partId = row.dataset.partId;
+            const customId = row.dataset.customId;
             
             if (cabinetId && partId) {
                 const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
@@ -989,6 +1107,11 @@ function addTableEventListeners() {
                     if (part) {
                         part.groove = this.checked;
                     }
+                }
+            } else if (customId) {
+                const rowData = AppState.customRows.find(r => r.id === customId);
+                if (rowData) {
+                    rowData.groove = this.checked;
                 }
             }
         });
@@ -1000,6 +1123,7 @@ function addTableEventListeners() {
             const row = this.closest('tr');
             const cabinetId = row.dataset.cabinetId;
             const partId = row.dataset.partId;
+            const customId = row.dataset.customId;
             
             if (cabinetId && partId) {
                 const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
@@ -1008,6 +1132,11 @@ function addTableEventListeners() {
                     if (part) {
                         part.pvc = this.value;
                     }
+                }
+            } else if (customId) {
+                const rowData = AppState.customRows.find(r => r.id === customId);
+                if (rowData) {
+                    rowData.pvc = this.value;
                 }
             }
         });
@@ -1019,6 +1148,7 @@ function addTableEventListeners() {
             const row = this.closest('tr');
             const cabinetId = row.dataset.cabinetId;
             const partId = row.dataset.partId;
+            const customId = row.dataset.customId;
             
             if (cabinetId && partId) {
                 const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
@@ -1027,6 +1157,11 @@ function addTableEventListeners() {
                     if (part) {
                         part.notes = this.value;
                     }
+                }
+            } else if (customId) {
+                const rowData = AppState.customRows.find(r => r.id === customId);
+                if (rowData) {
+                    rowData.notes = this.value;
                 }
             }
         });
@@ -1037,8 +1172,32 @@ function addTableEventListeners() {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
             const cabinetId = row.dataset.cabinetId;
-            // Implement edit functionality
-            showToast('ویرایش', 'امکان ویرایش به زودی اضافه خواهد شد', 'info');
+            const partId = row.dataset.partId;
+            
+            if (cabinetId && partId) {
+                const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
+                if (cabinet) {
+                    const part = cabinet.parts.find(p => p.id === partId);
+                    if (part) {
+                        // Populate form with part data for editing
+                        DOM.cabinetWidth.value = cabinet.width;
+                        DOM.cabinetHeight.value = cabinet.height;
+                        DOM.cabinetDepth.value = cabinet.depth;
+                        DOM.shelfCount.value = cabinet.shelves;
+                        DOM.stretcherQuantity.value = cabinet.stretcherQty;
+                        DOM.stretcherHeight.value = cabinet.stretcherHeight;
+                        DOM.craftsmanName.value = cabinet.craftsman;
+                        DOM.clientName.value = cabinet.client;
+                        
+                        // Set cabinet type
+                        document.querySelector(`input[name="cabinetType"][value="${cabinet.type}"]`).checked = true;
+                        updateCabinetTypeUI();
+                        
+                        // Show toast
+                        showToast('ویرایش', 'مشخصات کابینت برای ویرایش بارگذاری شد', 'info');
+                    }
+                }
+            }
         });
     });
     
@@ -1074,22 +1233,53 @@ function addTableEventListeners() {
     });
     
     // Custom row inputs
-    document.querySelectorAll('.part-name-input, .quantity-input, .width-input, .height-input').forEach(input => {
+    document.querySelectorAll('.part-name-input').forEach(input => {
         input.addEventListener('input', function() {
             const row = this.closest('tr');
             const customId = row.dataset.customId;
             const rowData = AppState.customRows.find(r => r.id === customId);
             
             if (rowData) {
-                if (this.classList.contains('part-name-input')) {
-                    rowData.description = this.value;
-                } else if (this.classList.contains('quantity-input')) {
-                    rowData.quantity = parseInt(this.value) || 1;
-                } else if (this.classList.contains('width-input')) {
-                    rowData.width = parseFloat(this.value) || 0;
-                } else if (this.classList.contains('height-input')) {
-                    rowData.height = parseFloat(this.value) || 0;
-                }
+                rowData.description = this.value;
+                updateResultsDisplay();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            const customId = row.dataset.customId;
+            const rowData = AppState.customRows.find(r => r.id === customId);
+            
+            if (rowData) {
+                rowData.quantity = parseInt(this.value) || 1;
+                updateResultsDisplay();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.width-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            const customId = row.dataset.customId;
+            const rowData = AppState.customRows.find(r => r.id === customId);
+            
+            if (rowData) {
+                rowData.width = parseFloat(this.value) || 0;
+                updateResultsDisplay();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.height-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            const customId = row.dataset.customId;
+            const rowData = AppState.customRows.find(r => r.id === customId);
+            
+            if (rowData) {
+                rowData.height = parseFloat(this.value) || 0;
                 updateResultsDisplay();
             }
         });
@@ -1143,7 +1333,7 @@ function filterTable() {
 
 // Export Functions
 function printTable() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
@@ -1173,6 +1363,7 @@ function printTable() {
                     padding: 20px;
                     color: #000;
                     line-height: 1.4;
+                    direction: rtl;
                 }
                 
                 .print-header {
@@ -1269,6 +1460,7 @@ function printTable() {
                     .no-print { display: none; }
                     table { page-break-inside: auto; }
                     tr { page-break-inside: avoid; }
+                    @page { margin: 1.5cm; }
                 }
             </style>
         </head>
@@ -1406,7 +1598,7 @@ function getPVCtext(pvc) {
 }
 
 async function exportToPDF() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
@@ -1503,7 +1695,7 @@ async function exportToPDF() {
             });
         }
         
-        // Generate table
+        // Generate table with RTL support
         pdf.autoTable({
             startY: 60,
             head: [['نوع قطعه', 'تعداد', 'عرض', 'ارتفاع', 'شیار', 'نوار PVC', 'توضیحات']],
@@ -1516,7 +1708,9 @@ async function exportToPDF() {
                 halign: 'center'
             },
             bodyStyles: {
-                halign: 'center'
+                halign: 'center',
+                font: 'Vazirmatn',
+                fontStyle: 'normal'
             },
             columnStyles: {
                 0: { cellWidth: 40, halign: 'right' },
@@ -1528,6 +1722,11 @@ async function exportToPDF() {
                 6: { cellWidth: 50, halign: 'right' }
             },
             margin: { left: 15, right: 15 },
+            styles: {
+                font: 'Vazirmatn',
+                fontStyle: 'normal',
+                textColor: [0, 0, 0]
+            },
             didDrawPage: function(data) {
                 // Footer
                 pdf.setFontSize(8);
@@ -1558,7 +1757,7 @@ async function exportToPDF() {
 }
 
 function exportToExcel() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
@@ -1602,7 +1801,7 @@ function exportToExcel() {
 
 // Project Management
 function saveProject() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
@@ -1702,6 +1901,8 @@ function loadProject(projectId) {
         DOM.cabinetHeight.value = firstCabinet.height;
         DOM.cabinetDepth.value = firstCabinet.depth;
         DOM.shelfCount.value = firstCabinet.shelves;
+        DOM.stretcherQuantity.value = firstCabinet.stretcherQty;
+        DOM.stretcherHeight.value = firstCabinet.stretcherHeight;
         
         // Set metadata
         DOM.craftsmanName.value = project.craftsman;
@@ -1805,6 +2006,8 @@ function setupAutoSave() {
         DOM.cabinetHeight,
         DOM.cabinetDepth,
         DOM.shelfCount,
+        DOM.stretcherQuantity,
+        DOM.stretcherHeight,
         DOM.craftsmanName,
         DOM.clientName
     ];
@@ -1822,6 +2025,8 @@ function saveFormValues() {
         height: DOM.cabinetHeight.value,
         depth: DOM.cabinetDepth.value,
         shelves: DOM.shelfCount.value,
+        stretcherQty: DOM.stretcherQuantity.value,
+        stretcherHeight: DOM.stretcherHeight.value,
         craftsman: DOM.craftsmanName.value,
         client: DOM.clientName.value,
         cabinetType: document.querySelector('input[name="cabinetType"]:checked').value
@@ -1844,7 +2049,9 @@ function loadLastValues() {
             DOM.cabinetWidth.value = formData.width || '';
             DOM.cabinetHeight.value = formData.height || '';
             DOM.cabinetDepth.value = formData.depth || '';
-            DOM.shelfCount.value = formData.shelves || '2';
+            DOM.shelfCount.value = formData.shelves || (formData.cabinetType === 'aerial' ? '2' : '1');
+            DOM.stretcherQuantity.value = formData.stretcherQty || (formData.cabinetType === 'aerial' ? '0' : '2');
+            DOM.stretcherHeight.value = formData.stretcherHeight || '12';
             DOM.craftsmanName.value = formData.craftsman || '';
             DOM.clientName.value = formData.client || '';
         } catch (e) {
@@ -1865,6 +2072,20 @@ function handleResize() {
         DOM.mainHeader.classList.remove('header-hidden', 'header-visible');
         AppState.headerVisible = true;
     }
+    
+    // Ensure proper centering
+    updateLayoutCentering();
+}
+
+function updateLayoutCentering() {
+    // Ensure all containers are properly centered
+    const containers = document.querySelectorAll('.container, .app-layout, .header-content, .footer-content');
+    containers.forEach(container => {
+        container.style.marginInline = 'auto';
+        container.style.maxWidth = '1400px';
+        container.style.width = '100%';
+        container.style.boxSizing = 'border-box';
+    });
 }
 
 // Update Formulas Display
