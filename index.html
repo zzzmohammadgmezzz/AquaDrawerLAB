@@ -8,26 +8,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header Section -->
-    <header class="header">
+    <!-- Mobile Header (Auto-hide on scroll) -->
+    <header class="main-header" id="mainHeader">
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
                     <button class="menu-toggle" id="menuToggle" aria-label="منو">
                         <i class="mdi mdi-menu"></i>
                     </button>
-                    <h1 class="logo">
+                    <div class="logo">
                         <i class="mdi mdi-table-settings"></i>
-                        <span>Aqua Drawer LAB</span>
-                        <small>By_zZzMohammadzZz</small>
-                    </h1>
+                        <div class="logo-text">
+                            <h1>Aqua Drawer LAB</h1>
+                            <small>By_zZzMohammadzZz</small>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="header-actions">
+                <div class="header-controls">
                     <div class="theme-toggle-wrapper">
                         <button class="theme-toggle" id="themeToggle" aria-label="تغییر تم">
                             <i class="mdi mdi-weather-sunny" id="themeIcon"></i>
@@ -45,10 +47,10 @@
     <main class="main-content">
         <div class="container">
             <div class="app-layout">
-                <!-- Sidebar Navigation (Mobile/Tablet) -->
+                <!-- Sidebar Navigation -->
                 <nav class="sidebar" id="sidebar">
                     <div class="sidebar-header">
-                        <h3>منو</h3>
+                        <h3><i class="mdi mdi-menu"></i> منو</h3>
                         <button class="close-sidebar" id="closeSidebar">
                             <i class="mdi mdi-close"></i>
                         </button>
@@ -61,7 +63,21 @@
                         <li><hr></li>
                         <li><a href="#saved-projects" class="sidebar-link"><i class="mdi mdi-content-save"></i> پروژه‌های ذخیره شده</a></li>
                         <li><a href="#instructions" class="sidebar-link"><i class="mdi mdi-help-circle"></i> راهنما</a></li>
+                        <li><a href="#about" class="sidebar-link"><i class="mdi mdi-information"></i> درباره</a></li>
                     </ul>
+                    
+                    <div class="sidebar-footer">
+                        <div class="github-link">
+                            <a href="https://github.com/USERNAME" target="_blank">
+                                <i class="mdi mdi-github"></i>
+                                GitHub
+                            </a>
+                        </div>
+                        <div class="sidebar-credits">
+                            <i class="mdi mdi-heart"></i>
+                            طراحی و توسعه توسط ممد
+                        </div>
+                    </div>
                 </nav>
 
                 <!-- Main App Area -->
@@ -75,6 +91,38 @@
                         
                         <div class="card-body">
                             <div class="form-grid">
+                                <!-- Cabinet Type Selection -->
+                                <div class="form-group full-width">
+                                    <label for="cabinetType">
+                                        <i class="mdi mdi-cube"></i>
+                                        نوع کابینت
+                                    </label>
+                                    <div class="radio-group cabinet-type-selector">
+                                        <label class="radio-label type-option" data-type="aerial">
+                                            <input type="radio" name="cabinetType" value="aerial" checked>
+                                            <span class="radio-custom"></span>
+                                            <div class="type-icon">
+                                                <i class="mdi mdi-wall"></i>
+                                            </div>
+                                            <div class="type-info">
+                                                <span class="type-title">کابینت دیواری</span>
+                                                <span class="type-subtitle">(باکس هوایی)</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-label type-option" data-type="ground">
+                                            <input type="radio" name="cabinetType" value="ground">
+                                            <span class="radio-custom"></span>
+                                            <div class="type-icon">
+                                                <i class="mdi mdi-floor-plan"></i>
+                                            </div>
+                                            <div class="type-info">
+                                                <span class="type-title">کابینت زمینی</span>
+                                                <span class="type-subtitle">(باکس زمینی)</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <!-- Cabinet Dimensions -->
                                 <div class="form-group">
                                     <label for="cabinetWidth">
@@ -82,10 +130,10 @@
                                         عرض کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetWidth" min="30" max="200" step="0.1" value="80.0">
+                                        <input type="number" id="cabinetWidth" min="30" max="200" step="0.1" value="41.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(۳۰ تا ۲۰۰ سانتی‌متر)</div>
+                                    <div class="hint" id="widthHint">(۳۰ تا ۲۰۰ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -94,10 +142,10 @@
                                         ارتفاع کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetHeight" min="30" max="300" step="0.1" value="120.0">
+                                        <input type="number" id="cabinetHeight" min="30" max="300" step="0.1" value="97.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(۳۰ تا ۳۰۰ سانتی‌متر)</div>
+                                    <div class="hint" id="heightHint">(۳۰ تا ۳۰۰ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -106,10 +154,10 @@
                                         عمق کابینت
                                     </label>
                                     <div class="input-with-unit">
-                                        <input type="number" id="cabinetDepth" min="30" max="100" step="0.1" value="55.0">
+                                        <input type="number" id="cabinetDepth" min="30" max="100" step="0.1" value="35.0">
                                         <span class="unit">سانتی‌متر</span>
                                     </div>
-                                    <div class="hint">(پیش‌فرض: ۵۵ سانتی‌متر)</div>
+                                    <div class="hint">(پیش‌فرض: ۳۵ سانتی‌متر)</div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -121,27 +169,33 @@
                                         <input type="number" id="shelfCount" min="0" max="20" step="1" value="2">
                                         <span class="unit">عدد</span>
                                     </div>
-                                    <div class="hint">(۰ تا ۲۰ طبقه)</div>
+                                    <div class="hint" id="shelfHint">(۰ تا ۲۰ طبقه)</div>
                                 </div>
-                                
-                                <!-- Cabinet Type -->
-                                <div class="form-group full-width">
-                                    <label for="cabinetType">
-                                        <i class="mdi mdi-cube"></i>
-                                        نوع کابینت
+
+                                <!-- Stretcher Height for Ground Cabinet -->
+                                <div class="form-group" id="stretcherGroup" style="display: none;">
+                                    <label for="stretcherHeight">
+                                        <i class="mdi mdi-ruler"></i>
+                                        ارتفاع تیرک
                                     </label>
-                                    <div class="radio-group">
-                                        <label class="radio-label">
-                                            <input type="radio" name="cabinetType" id="wallCabinet" value="wall" checked>
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">کابینت دیواری (باکس هوایی)</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="cabinetType" id="floorCabinet" value="floor">
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">کابینت زمینی (باکس زمینی)</span>
-                                        </label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="stretcherHeight" min="8" max="20" step="0.1" value="12.0">
+                                        <span class="unit">سانتی‌متر</span>
                                     </div>
+                                    <div class="hint">(۸ تا ۲۰ سانتی‌متر)</div>
+                                </div>
+
+                                <!-- Back Panel Height Offset -->
+                                <div class="form-group" id="backPanelGroup">
+                                    <label for="backPanelOffset">
+                                        <i class="mdi mdi-panel"></i>
+                                        آفست سه‌میل
+                                    </label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="backPanelOffset" min="0.5" max="3" step="0.1" value="1.6">
+                                        <span class="unit">سانتی‌متر</span>
+                                    </div>
+                                    <div class="hint">(۰.۵ تا ۳ سانتی‌متر)</div>
                                 </div>
                                 
                                 <!-- Metadata -->
@@ -170,27 +224,76 @@
                                 </div>
                             </div>
                             
+                            <!-- Quick Actions -->
+                            <div class="quick-actions">
+                                <button class="quick-btn" data-action="reset">
+                                    <i class="mdi mdi-refresh"></i>
+                                    بازنشانی
+                                </button>
+                                <button class="quick-btn" data-action="loadDefaults">
+                                    <i class="mdi mdi-download"></i>
+                                    مقادیر پیش‌فرض
+                                </button>
+                                <button class="quick-btn" data-action="swapDimensions">
+                                    <i class="mdi mdi-swap-horizontal"></i>
+                                    جابجایی ابعاد
+                                </button>
+                            </div>
+                            
                             <!-- Form Actions -->
                             <div class="form-actions">
-                                <button class="btn btn-primary" id="calculateBtn">
+                                <button class="btn btn-primary btn-lg" id="calculateBtn">
                                     <i class="mdi mdi-calculator"></i>
-                                    محاسبه جدول
+                                    محاسبه و نمایش
                                 </button>
-                                <button class="btn btn-success" id="addToTableBtn">
+                                <button class="btn btn-success btn-lg" id="addToTableBtn">
                                     <i class="mdi mdi-plus-box"></i>
                                     افزودن به جدول
                                 </button>
-                                <button class="btn btn-secondary" id="resetBtn">
-                                    <i class="mdi mdi-refresh"></i>
-                                    بازنشانی فرم
-                                </button>
-                                <button class="btn btn-danger" id="clearTableBtn">
-                                    <i class="mdi mdi-table-remove"></i>
-                                    پاک کردن جدول
+                                <button class="btn btn-secondary" id="preview3DBtn">
+                                    <i class="mdi mdi-cube-scan"></i>
+                                    پیش‌نمایش سه‌بعدی
                                 </button>
                             </div>
                         </div>
                     </section>
+
+                    <!-- 3D Preview Modal -->
+                    <div class="modal" id="preview3DModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3><i class="mdi mdi-cube-outline"></i> پیش‌نمایش سه‌بعدی کابینت</h3>
+                                <button class="close-modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="preview-container">
+                                    <div class="preview-svg" id="preview3DSVG"></div>
+                                    <div class="preview-info">
+                                        <div class="dimension-display">
+                                            <span class="dim-label">عرض:</span>
+                                            <span class="dim-value" id="previewWidth">41.0</span>
+                                            <span class="dim-unit">سانتی‌متر</span>
+                                        </div>
+                                        <div class="dimension-display">
+                                            <span class="dim-label">ارتفاع:</span>
+                                            <span class="dim-value" id="previewHeight">97.0</span>
+                                            <span class="dim-unit">سانتی‌متر</span>
+                                        </div>
+                                        <div class="dimension-display">
+                                            <span class="dim-label">عمق:</span>
+                                            <span class="dim-value" id="previewDepth">35.0</span>
+                                            <span class="dim-unit">سانتی‌متر</span>
+                                        </div>
+                                        <div class="dimension-display">
+                                            <span class="dim-label">تعداد طبقات:</span>
+                                            <span class="dim-value" id="previewShelves">2</span>
+                                            <span class="dim-unit">عدد</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Results Section -->
                     <section class="card results-section" id="results-section">
@@ -202,21 +305,59 @@
                         <div class="card-body">
                             <!-- Results Metadata -->
                             <div class="results-metadata">
-                                <div class="metadata-item">
-                                    <span class="metadata-label">استادکار:</span>
-                                    <span class="metadata-value" id="resultCraftsman">تعیین نشده</span>
+                                <div class="metadata-grid">
+                                    <div class="metadata-item">
+                                        <div class="metadata-icon">
+                                            <i class="mdi mdi-account-hard-hat"></i>
+                                        </div>
+                                        <div class="metadata-content">
+                                            <div class="metadata-label">استادکار</div>
+                                            <div class="metadata-value" id="resultCraftsman">تعیین نشده</div>
+                                        </div>
+                                    </div>
+                                    <div class="metadata-item">
+                                        <div class="metadata-icon">
+                                            <i class="mdi mdi-account"></i>
+                                        </div>
+                                        <div class="metadata-content">
+                                            <div class="metadata-label">مشتری</div>
+                                            <div class="metadata-value" id="resultClient">تعیین نشده</div>
+                                        </div>
+                                    </div>
+                                    <div class="metadata-item">
+                                        <div class="metadata-icon">
+                                            <i class="mdi mdi-calendar"></i>
+                                        </div>
+                                        <div class="metadata-content">
+                                            <div class="metadata-label">تاریخ</div>
+                                            <div class="metadata-value" id="resultDate">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="metadata-item">
+                                        <div class="metadata-icon">
+                                            <i class="mdi mdi-counter"></i>
+                                        </div>
+                                        <div class="metadata-content">
+                                            <div class="metadata-label">تعداد کابینت‌ها</div>
+                                            <div class="metadata-value" id="cabinetCount">0</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="metadata-item">
-                                    <span class="metadata-label">مشتری:</span>
-                                    <span class="metadata-value" id="resultClient">تعیین نشده</span>
-                                </div>
-                                <div class="metadata-item">
-                                    <span class="metadata-label">تاریخ:</span>
-                                    <span class="metadata-value" id="resultDate">-</span>
-                                </div>
-                                <div class="metadata-item">
-                                    <span class="metadata-label">تعداد کابینت‌ها:</span>
-                                    <span class="metadata-value" id="cabinetCount">0</span>
+                            </div>
+                            
+                            <!-- Table Controls -->
+                            <div class="table-controls">
+                                <button class="btn btn-sm btn-secondary" id="addCustomRowBtn">
+                                    <i class="mdi mdi-plus-circle"></i>
+                                    افزودن ردیف سفارشی
+                                </button>
+                                <button class="btn btn-sm btn-danger" id="clearTableBtn">
+                                    <i class="mdi mdi-table-remove"></i>
+                                    پاک کردن جدول
+                                </button>
+                                <div class="table-search">
+                                    <input type="text" placeholder="جستجو در جدول..." id="tableSearch">
+                                    <i class="mdi mdi-magnify"></i>
                                 </div>
                             </div>
                             
@@ -225,19 +366,18 @@
                                 <table class="results-table" id="resultsTable">
                                     <thead>
                                         <tr>
-                                            <th rowspan="2">نمای سه‌بعدی</th>
-                                            <th rowspan="2">شیار</th>
-                                            <th colspan="2">نوار PVC</th>
-                                            <th rowspan="2">نوع قطعه / توضیحات</th>
+                                            <th rowspan="2" class="col-3d">نمای سه‌بعدی</th>
+                                            <th rowspan="2">نوع قطعه</th>
                                             <th rowspan="2">تعداد</th>
                                             <th colspan="2">ابعاد (سانتی‌متر)</th>
-                                            <th rowspan="2">شماره پیوست</th>
+                                            <th rowspan="2">شیار</th>
+                                            <th rowspan="2">نوار PVC</th>
+                                            <th rowspan="2">شماره پیوست / توضیحات</th>
+                                            <th rowspan="2" class="col-actions">عملیات</th>
                                         </tr>
                                         <tr>
                                             <th>عرض</th>
-                                            <th>طول</th>
-                                            <th>عرض</th>
-                                            <th>طول</th>
+                                            <th>ارتفاع / طول</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableBody">
@@ -247,11 +387,28 @@
                                                 <div class="empty-state">
                                                     <i class="mdi mdi-table-large"></i>
                                                     <p>هنوز کابینتی به جدول اضافه نشده است</p>
-                                                    <small>از دکمه "محاسبه جدول" یا "افزودن به جدول" استفاده کنید</small>
+                                                    <small>از دکمه "محاسبه و نمایش" یا "افزودن به جدول" استفاده کنید</small>
                                                 </div>
                                             </td>
                                         </tr>
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="9">
+                                                <div class="table-summary">
+                                                    <div class="summary-item">
+                                                        <span class="summary-label">مجموع قطعات:</span>
+                                                        <span class="summary-value" id="totalParts">0</span>
+                                                    </div>
+                                                    <div class="summary-item">
+                                                        <span class="summary-label">مجموع متراژ:</span>
+                                                        <span class="summary-value" id="totalArea">0</span>
+                                                        <span class="summary-unit">متر مربع</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                             
@@ -267,9 +424,13 @@
                                         <i class="mdi mdi-file-pdf"></i>
                                         خروجی PDF
                                     </button>
-                                    <button class="btn btn-secondary" id="saveProjectBtn">
+                                    <button class="btn btn-success" id="saveProjectBtn">
                                         <i class="mdi mdi-content-save"></i>
                                         ذخیره پروژه
+                                    </button>
+                                    <button class="btn btn-secondary" id="exportExcelBtn">
+                                        <i class="mdi mdi-file-excel"></i>
+                                        خروجی Excel
                                     </button>
                                 </div>
                             </div>
@@ -277,7 +438,7 @@
                     </section>
 
                     <!-- Saved Projects -->
-                    <section class="card saved-projects" id="saved-projects" style="display: none;">
+                    <section class="card saved-projects" id="saved-projects">
                         <div class="card-header">
                             <h2><i class="mdi mdi-content-save"></i> پروژه‌های ذخیره شده</h2>
                             <p class="card-subtitle">لیست پروژه‌هایی که ذخیره کرده‌اید</p>
@@ -289,6 +450,7 @@
                                 <div class="empty-state">
                                     <i class="mdi mdi-folder-open-outline"></i>
                                     <p>هیچ پروژه‌ای ذخیره نشده است</p>
+                                    <small>پروژه‌های خود را ذخیره کنید تا بعداً بتوانید آنها را بارگذاری کنید</small>
                                 </div>
                             </div>
                         </div>
@@ -305,16 +467,16 @@
                                 <div class="instruction-step">
                                     <div class="step-number">1</div>
                                     <div class="step-content">
-                                        <h4>وارد کردن ابعاد</h4>
-                                        <p>ابعاد کابینت را بر حسب سانتی‌متر وارد کنید. دقت کنید که ضخامت ورق ۱.۶ سانتی‌متر در محاسبات لحاظ می‌شود.</p>
+                                        <h4>انتخاب نوع کابینت</h4>
+                                        <p>نوع کابینت (دیواری یا زمینی) را انتخاب کنید. فرمول‌های محاسباتی برای هر نوع متفاوت است.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="instruction-step">
                                     <div class="step-number">2</div>
                                     <div class="step-content">
-                                        <h4>انتخاب نوع کابینت</h4>
-                                        <p>نوع کابینت (دیواری یا زمینی) را انتخاب کنید. فرمول‌های محاسباتی برای هر نوع متفاوت است.</p>
+                                        <h4>وارد کردن ابعاد</h4>
+                                        <p>ابعاد کابینت را بر حسب سانتی‌متر وارد کنید. دقت کنید که ضخامت ورق ۱.۶ سانتی‌متر در محاسبات لحاظ می‌شود.</p>
                                     </div>
                                 </div>
                                 
@@ -322,7 +484,7 @@
                                     <div class="step-number">3</div>
                                     <div class="step-content">
                                         <h4>محاسبه و افزودن به جدول</h4>
-                                        <p>از دکمه "محاسبه جدول" برای مشاهده نتیجه یا "افزودن به جدول" برای اضافه کردن چندین کابینت استفاده کنید.</p>
+                                        <p>از دکمه "محاسبه و نمایش" برای مشاهده نتیجه یا "افزودن به جدول" برای اضافه کردن چندین کابینت استفاده کنید.</p>
                                     </div>
                                 </div>
                                 
@@ -338,21 +500,23 @@
                             <div class="formulas-info">
                                 <h4><i class="mdi mdi-math-compass"></i> فرمول‌های محاسباتی</h4>
                                 <div class="formulas-grid">
-                                    <div class="formula-card">
+                                    <div class="formula-card" id="aerialFormulas">
                                         <h5>کابینت دیواری (باکس هوایی)</h5>
                                         <ul>
                                             <li><strong>بدنه (۲ عدد):</strong> ارتفاع × عمق</li>
                                             <li><strong>سقف و کف (۲ عدد):</strong> (عرض - ۳.۲) × عمق</li>
                                             <li><strong>طبقه (n عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
+                                            <li><strong>سه‌میل (۱ عدد):</strong> (عرض - ۱.۶) × (ارتفاع - ۱.۶)</li>
                                         </ul>
                                     </div>
-                                    <div class="formula-card">
+                                    <div class="formula-card" id="groundFormulas">
                                         <h5>کابینت زمینی (باکس زمینی)</h5>
                                         <ul>
                                             <li><strong>بدنه (۲ عدد):</strong> (ارتفاع - ۱.۶) × عمق</li>
                                             <li><strong>کف (۱ عدد):</strong> عرض × عمق</li>
                                             <li><strong>تیرک (۲ عدد):</strong> (عرض - ۳.۲) × ۱۲</li>
                                             <li><strong>طبقه (۱ عدد):</strong> (عرض - ۳.۲) × (عمق - ۲)</li>
+                                            <li><strong>سه‌میل (۱ عدد):</strong> (عرض - ۱.۶) × (ارتفاع - ۰.۹)</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -360,10 +524,67 @@
                             </div>
                         </div>
                     </section>
+
+                    <!-- About Section -->
+                    <section class="card about-section" id="about">
+                        <div class="card-header">
+                            <h2><i class="mdi mdi-information"></i> درباره نرم‌افزار</h2>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="about-content">
+                                <div class="about-logo">
+                                    <i class="mdi mdi-table-settings"></i>
+                                    <h3>Aqua Drawer LAB</h3>
+                                    <p class="version">نسخه ۲.۰</p>
+                                </div>
+                                
+                                <div class="about-description">
+                                    <p>این نرم‌افزار یک ابزار تخصصی برای صنعتگران و کارگاه‌های تولید کابینت است که عملیات محاسبه و تجزیه باکس کابینت به قطعات قابل تولید را به صورت خودکار انجام می‌دهد.</p>
+                                    
+                                    <div class="features-list">
+                                        <h4>ویژگی‌های اصلی:</h4>
+                                        <ul>
+                                            <li><i class="mdi mdi-check-circle"></i> پشتیبانی از دو نوع کابینت دیواری و زمینی</li>
+                                            <li><i class="mdi mdi-check-circle"></i> نمایش گرافیکی سه‌بعدی کابینت</li>
+                                            <li><i class="mdi mdi-check-circle"></i> تولید خودکار جدول ریزاندازه</li>
+                                            <li><i class="mdi mdi-check-circle"></i> خروجی PDF و پرینت حرفه‌ای</li>
+                                            <li><i class="mdi mdi-check-circle"></i> ذخیره و بازیابی پروژه‌ها</li>
+                                            <li><i class="mdi mdi-check-circle"></i> رابط کاربری فارسی و سازگار با موبایل</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="developer-info">
+                                        <h4>طراحی و توسعه:</h4>
+                                        <div class="developer-card">
+                                            <div class="developer-avatar">
+                                                <i class="mdi mdi-account-circle"></i>
+                                            </div>
+                                            <div class="developer-details">
+                                                <h5>ممد (By_zZzMohammadzZz)</h5>
+                                                <p>متخصص فرانت‌اند و طراحی رابط کاربری</p>
+                                                <div class="developer-links">
+                                                    <a href="https://github.com/USERNAME" target="_blank">
+                                                        <i class="mdi mdi-github"></i>
+                                                        GitHub
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="scrollTopBtn">
+        <i class="mdi mdi-chevron-up"></i>
+    </button>
 
     <!-- Footer -->
     <footer class="footer">
@@ -380,14 +601,18 @@
                 </div>
                 
                 <div class="footer-links">
-                    <a href="https://github.com/USERNAME" target="_blank" class="footer-link">
-                        <i class="mdi mdi-github"></i>
-                        GitHub
-                    </a>
-                    <span class="footer-credits">
+                    <div class="footer-social">
+                        <a href="https://github.com/USERNAME" target="_blank" class="social-link">
+                            <i class="mdi mdi-github"></i>
+                        </a>
+                    </div>
+                    <div class="footer-credits">
                         <i class="mdi mdi-heart"></i>
-                        ساخته شده توسط ممد
-                    </span>
+                        طراحی و توسعه توسط ممد
+                    </div>
+                    <div class="footer-version">
+                        نسخه ۲.۰
+                    </div>
                 </div>
             </div>
         </div>
@@ -396,6 +621,7 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

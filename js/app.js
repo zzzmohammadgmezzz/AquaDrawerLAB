@@ -1,87 +1,238 @@
-// Application State
+// Aqua Drawer LAB - Cabinet Cutting Calculator
+// Version 2.0 - Complete Rewrite
+// By_zZzMohammadzZz
+
+// Application State Management
 const AppState = {
     currentTheme: 'light',
-    cabinets: [], // Array of all cabinets added to table
+    cabinets: [],
     savedProjects: [],
     isSidebarOpen: false,
-    currentCabinetId: 1 // Auto-increment ID for cabinets
+    currentCabinetId: 1,
+    isScrolling: false,
+    lastScrollTop: 0,
+    headerVisible: true,
+    toastTimeout: null,
+    isCalculating: false,
+    customRows: []
 };
 
-// DOM Elements
-const domElements = {
+// DOM Elements Cache
+const DOM = {
+    // Theme & Layout
     themeToggle: document.getElementById('themeToggle'),
     themeIcon: document.getElementById('themeIcon'),
     menuToggle: document.getElementById('menuToggle'),
     closeSidebar: document.getElementById('closeSidebar'),
     sidebar: document.getElementById('sidebar'),
-    calculateBtn: document.getElementById('calculateBtn'),
-    addToTableBtn: document.getElementById('addToTableBtn'),
-    resetBtn: document.getElementById('resetBtn'),
-    clearTableBtn: document.getElementById('clearTableBtn'),
-    printBtn: document.getElementById('printBtn'),
-    pdfBtn: document.getElementById('pdfBtn'),
-    saveProjectBtn: document.getElementById('saveProjectBtn'),
-    resultsSection: document.getElementById('results-section'),
-    tableBody: document.getElementById('tableBody'),
-    projectsList: document.getElementById('projectsList'),
+    mainHeader: document.getElementById('mainHeader'),
+    scrollTopBtn: document.getElementById('scrollTopBtn'),
     
-    // Input fields
+    // Form Elements
     cabinetWidth: document.getElementById('cabinetWidth'),
     cabinetHeight: document.getElementById('cabinetHeight'),
     cabinetDepth: document.getElementById('cabinetDepth'),
     shelfCount: document.getElementById('shelfCount'),
-    cabinetType: document.querySelectorAll('input[name="cabinetType"]'),
+    stretcherHeight: document.getElementById('stretcherHeight'),
+    stretcherGroup: document.getElementById('stretcherGroup'),
+    backPanelOffset: document.getElementById('backPanelOffset'),
+    backPanelGroup: document.getElementById('backPanelGroup'),
+    cabinetTypeRadios: document.querySelectorAll('input[name="cabinetType"]'),
     craftsmanName: document.getElementById('craftsmanName'),
     clientName: document.getElementById('clientName'),
     projectDate: document.getElementById('projectDate'),
     
-    // Result display fields
+    // Hints
+    widthHint: document.getElementById('widthHint'),
+    heightHint: document.getElementById('heightHint'),
+    shelfHint: document.getElementById('shelfHint'),
+    
+    // Buttons
+    calculateBtn: document.getElementById('calculateBtn'),
+    addToTableBtn: document.getElementById('addToTableBtn'),
+    clearTableBtn: document.getElementById('clearTableBtn'),
+    printBtn: document.getElementById('printBtn'),
+    pdfBtn: document.getElementById('pdfBtn'),
+    saveProjectBtn: document.getElementById('saveProjectBtn'),
+    preview3DBtn: document.getElementById('preview3DBtn'),
+    exportExcelBtn: document.getElementById('exportExcelBtn'),
+    addCustomRowBtn: document.getElementById('addCustomRowBtn'),
+    
+    // Quick Actions
+    quickBtns: document.querySelectorAll('.quick-btn'),
+    
+    // Table Elements
+    tableBody: document.getElementById('tableBody'),
+    tableSearch: document.getElementById('tableSearch'),
+    
+    // Results Display
     resultCraftsman: document.getElementById('resultCraftsman'),
     resultClient: document.getElementById('resultClient'),
     resultDate: document.getElementById('resultDate'),
     resultsSubtitle: document.getElementById('resultsSubtitle'),
-    cabinetCount: document.getElementById('cabinetCount')
+    cabinetCount: document.getElementById('cabinetCount'),
+    totalParts: document.getElementById('totalParts'),
+    totalArea: document.getElementById('totalArea'),
+    
+    // Modal
+    preview3DModal: document.getElementById('preview3DModal'),
+    preview3DSVG: document.getElementById('preview3DSVG'),
+    closeModal: document.querySelector('.close-modal'),
+    previewWidth: document.getElementById('previewWidth'),
+    previewHeight: document.getElementById('previewHeight'),
+    previewDepth: document.getElementById('previewDepth'),
+    previewShelves: document.getElementById('previewShelves'),
+    
+    // Projects
+    projectsList: document.getElementById('projectsList'),
+    
+    // Formulas
+    aerialFormulas: document.getElementById('aerialFormulas'),
+    groundFormulas: document.getElementById('groundFormulas')
 };
 
-// Initialize the application
+// Constants
+const CONSTANTS = {
+    BOARD_THICKNESS: 1.6,
+    PVC_EDGE_THICKNESS: 0.2,
+    DEFAULT_AERIAL: { width: 41, height: 97, depth: 35, shelves: 2 },
+    DEFAULT_GROUND: { width: 49, height: 77.1, depth: 55, shelves: 1, stretcher: 12 },
+    MIN_DIMENSIONS: { width: 30, height: 30, depth: 30 },
+    MAX_DIMENSIONS: { width: 200, height: 300, depth: 100 },
+    MAX_SHELVES: { aerial: 20, ground: 1 }
+};
+
+// Initialize Application
 function init() {
-    // Load saved theme preference
-    loadThemePreference();
+    console.log('🚀 Aqua Drawer LAB v2.0 Initializing...');
     
-    // Set today's date
-    setTodayDate();
+    // Load saved state
+    loadSavedState();
     
-    // Load saved projects
-    loadSavedProjects();
+    // Set up UI
+    setupUI();
     
     // Set up event listeners
     setupEventListeners();
     
-    // Initialize with empty table
+    // Initial calculations
+    updateFormulasDisplay();
     updateCabinetCount();
     
-    console.log('Aqua Drawer LAB initialized successfully');
+    console.log('✅ Aqua Drawer LAB Ready!');
+}
+
+// Load Saved State
+function loadSavedState() {
+    // Load theme
+    const savedTheme = localStorage.getItem('aquaDrawerTheme');
+    AppState.currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme();
+    
+    // Load saved projects
+    const savedProjects = localStorage.getItem('aquaDrawerProjects');
+    if (savedProjects) {
+        try {
+            AppState.savedProjects = JSON.parse(savedProjects);
+            renderProjectsList();
+        } catch (e) {
+            console.error('Error loading saved projects:', e);
+        }
+    }
+    
+    // Set current date
+    setCurrentDate();
+    
+    // Load last used values
+    loadLastValues();
+}
+
+// Setup UI
+function setupUI() {
+    // Update cabinet type display
+    updateCabinetTypeUI();
+    
+    // Setup scroll top button
+    updateScrollTopButton();
+    
+    // Setup formulas display
+    updateFormulasDisplay();
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+    // Theme toggle
+    DOM.themeToggle.addEventListener('click', toggleTheme);
+    
+    // Sidebar toggle
+    DOM.menuToggle.addEventListener('click', toggleSidebar);
+    DOM.closeSidebar.addEventListener('click', closeSidebar);
+    
+    // Close sidebar on outside click
+    document.addEventListener('click', (e) => {
+        if (AppState.isSidebarOpen && 
+            !DOM.sidebar.contains(e.target) && 
+            !DOM.menuToggle.contains(e.target)) {
+            closeSidebar();
+        }
+    });
+    
+    // Cabinet type change
+    DOM.cabinetTypeRadios.forEach(radio => {
+        radio.addEventListener('change', handleCabinetTypeChange);
+    });
+    
+    // Form inputs validation
+    DOM.cabinetWidth.addEventListener('input', validateDimensions);
+    DOM.cabinetHeight.addEventListener('input', validateDimensions);
+    DOM.cabinetDepth.addEventListener('input', validateDimensions);
+    DOM.shelfCount.addEventListener('input', validateShelves);
+    
+    // Quick actions
+    DOM.quickBtns.forEach(btn => {
+        btn.addEventListener('click', handleQuickAction);
+    });
+    
+    // Main buttons
+    DOM.calculateBtn.addEventListener('click', calculateAndShow);
+    DOM.addToTableBtn.addEventListener('click', addToTable);
+    DOM.clearTableBtn.addEventListener('click', clearTable);
+    DOM.printBtn.addEventListener('click', printTable);
+    DOM.pdfBtn.addEventListener('click', exportToPDF);
+    DOM.saveProjectBtn.addEventListener('click', saveProject);
+    DOM.preview3DBtn.addEventListener('click', show3DPreview);
+    DOM.exportExcelBtn.addEventListener('click', exportToExcel);
+    DOM.addCustomRowBtn.addEventListener('click', addCustomRow);
+    
+    // Modal
+    DOM.closeModal.addEventListener('click', hide3DPreview);
+    DOM.preview3DModal.addEventListener('click', (e) => {
+        if (e.target === DOM.preview3DModal) hide3DPreview();
+    });
+    
+    // Table search
+    DOM.tableSearch.addEventListener('input', filterTable);
+    
+    // Scroll events for header auto-hide
+    window.addEventListener('scroll', handleScroll);
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    
+    // Form auto-save
+    setupAutoSave();
+    
+    // Window resize
+    window.addEventListener('resize', handleResize);
 }
 
 // Theme Management
-function loadThemePreference() {
-    const savedTheme = localStorage.getItem('aquaDrawerTheme');
-    if (savedTheme) {
-        AppState.currentTheme = savedTheme;
-    } else {
-        // Check system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        AppState.currentTheme = prefersDark ? 'dark' : 'light';
-    }
-    applyTheme();
-}
-
 function applyTheme() {
     document.documentElement.setAttribute('data-theme', AppState.currentTheme);
     localStorage.setItem('aquaDrawerTheme', AppState.currentTheme);
     
-    // Update theme icon
-    const icon = domElements.themeIcon;
+    // Update icon
+    const icon = DOM.themeIcon;
     if (AppState.currentTheme === 'dark') {
         icon.classList.remove('mdi-weather-sunny');
         icon.classList.add('mdi-weather-night');
@@ -94,433 +245,577 @@ function applyTheme() {
 function toggleTheme() {
     AppState.currentTheme = AppState.currentTheme === 'light' ? 'dark' : 'light';
     applyTheme();
+    showToast('تم تغییر کرد', `حالت ${AppState.currentTheme === 'dark' ? 'تاریک' : 'روشن'}`, 'success');
 }
 
-// Date Functions
-function setTodayDate() {
+// Sidebar Management
+function toggleSidebar() {
+    AppState.isSidebarOpen = !AppState.isSidebarOpen;
+    DOM.sidebar.classList.toggle('active', AppState.isSidebarOpen);
+}
+
+function closeSidebar() {
+    AppState.isSidebarOpen = false;
+    DOM.sidebar.classList.remove('active');
+}
+
+// Cabinet Type Handling
+function handleCabinetTypeChange() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    
+    // Update UI
+    updateCabinetTypeUI();
+    
+    // Update default values
+    if (isAerial) {
+        DOM.cabinetWidth.value = CONSTANTS.DEFAULT_AERIAL.width;
+        DOM.cabinetHeight.value = CONSTANTS.DEFAULT_AERIAL.height;
+        DOM.cabinetDepth.value = CONSTANTS.DEFAULT_AERIAL.depth;
+        DOM.shelfCount.value = CONSTANTS.DEFAULT_AERIAL.shelves;
+        DOM.shelfHint.textContent = `(۰ تا ${CONSTANTS.MAX_SHELVES.aerial} طبقه)`;
+    } else {
+        DOM.cabinetWidth.value = CONSTANTS.DEFAULT_GROUND.width;
+        DOM.cabinetHeight.value = CONSTANTS.DEFAULT_GROUND.height;
+        DOM.cabinetDepth.value = CONSTANTS.DEFAULT_GROUND.depth;
+        DOM.shelfCount.value = CONSTANTS.DEFAULT_GROUND.shelves;
+        DOM.shelfHint.textContent = `(فقط ۰ یا ${CONSTANTS.MAX_SHELVES.ground} طبقه)`;
+    }
+    
+    // Update formulas display
+    updateFormulasDisplay();
+    
+    showToast('نوع کابینت تغییر کرد', `کابینت ${isAerial ? 'دیواری' : 'زمینی'} انتخاب شد`, 'info');
+}
+
+function updateCabinetTypeUI() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    
+    // Show/hide stretcher input
+    DOM.stretcherGroup.style.display = isAerial ? 'none' : 'block';
+    
+    // Update back panel offset hint
+    const offsetHint = DOM.backPanelGroup.querySelector('.hint');
+    offsetHint.textContent = isAerial ? 
+        '(۰.۵ تا ۳ سانتی‌متر - پیش‌فرض: ۱.۶)' : 
+        '(۰.۵ تا ۳ سانتی‌متر - پیش‌فرض: ۰.۹)';
+    
+    if (!isAerial) {
+        DOM.backPanelOffset.value = '0.9';
+    }
+}
+
+// Date Handling
+function setCurrentDate() {
     const now = new Date();
     const persianDate = convertToPersianDate(now);
-    domElements.projectDate.value = persianDate;
+    DOM.projectDate.value = persianDate;
 }
 
 function convertToPersianDate(date) {
-    // Simple Persian date formatter
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    // Simple Persian date conversion
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        calendar: 'persian',
+        numberingSystem: 'arab'
+    };
     
-    const gregorianDate = date.toLocaleDateString('fa-IR', options);
-    
-    // Convert English digits to Persian
-    return gregorianDate.replace(/\d/g, digit => persianDigits[digit]);
+    return new Intl.DateTimeFormat('fa-IR', options).format(date);
 }
 
 // Form Validation
-function validateForm() {
-    const width = parseFloat(domElements.cabinetWidth.value);
-    const height = parseFloat(domElements.cabinetHeight.value);
-    const depth = parseFloat(domElements.cabinetDepth.value);
-    const shelves = parseInt(domElements.shelfCount.value);
+function validateDimensions() {
+    const width = parseFloat(DOM.cabinetWidth.value);
+    const height = parseFloat(DOM.cabinetHeight.value);
+    const depth = parseFloat(DOM.cabinetDepth.value);
     
     let isValid = true;
-    let errorMessage = '';
     
-    if (isNaN(width) || width < 30 || width > 200) {
+    if (width < CONSTANTS.MIN_DIMENSIONS.width || width > CONSTANTS.MAX_DIMENSIONS.width) {
+        highlightInvalid(DOM.cabinetWidth);
         isValid = false;
-        errorMessage = 'عرض کابینت باید بین ۳۰ تا ۲۰۰ سانتی‌متر باشد';
-        highlightInvalidField(domElements.cabinetWidth);
     } else {
-        removeHighlight(domElements.cabinetWidth);
+        removeHighlight(DOM.cabinetWidth);
     }
     
-    if (isNaN(height) || height < 30 || height > 300) {
+    if (height < CONSTANTS.MIN_DIMENSIONS.height || height > CONSTANTS.MAX_DIMENSIONS.height) {
+        highlightInvalid(DOM.cabinetHeight);
         isValid = false;
-        errorMessage = 'ارتفاع کابینت باید بین ۳۰ تا ۳۰۰ سانتی‌متر باشد';
-        highlightInvalidField(domElements.cabinetHeight);
     } else {
-        removeHighlight(domElements.cabinetHeight);
+        removeHighlight(DOM.cabinetHeight);
     }
     
-    if (isNaN(depth) || depth < 30 || depth > 100) {
+    if (depth < CONSTANTS.MIN_DIMENSIONS.depth || depth > CONSTANTS.MAX_DIMENSIONS.depth) {
+        highlightInvalid(DOM.cabinetDepth);
         isValid = false;
-        errorMessage = 'عمق کابینت باید بین ۳۰ تا ۱۰۰ سانتی‌متر باشد';
-        highlightInvalidField(domElements.cabinetDepth);
     } else {
-        removeHighlight(domElements.cabinetDepth);
-    }
-    
-    if (isNaN(shelves) || shelves < 0 || shelves > 20) {
-        isValid = false;
-        errorMessage = 'تعداد طبقات باید بین ۰ تا ۲۰ باشد';
-        highlightInvalidField(domElements.shelfCount);
-    } else {
-        removeHighlight(domElements.shelfCount);
-    }
-    
-    if (!isValid) {
-        showError(errorMessage);
+        removeHighlight(DOM.cabinetDepth);
     }
     
     return isValid;
 }
 
-function highlightInvalidField(field) {
-    field.parentElement.style.borderColor = '#e74c3c';
-    field.parentElement.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.2)';
+function validateShelves() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    const shelves = parseInt(DOM.shelfCount.value);
+    const maxShelves = isAerial ? CONSTANTS.MAX_SHELVES.aerial : CONSTANTS.MAX_SHELVES.ground;
+    
+    if (shelves < 0 || shelves > maxShelves) {
+        highlightInvalid(DOM.shelfCount);
+        return false;
+    } else {
+        removeHighlight(DOM.shelfCount);
+        return true;
+    }
 }
 
-function removeHighlight(field) {
-    field.parentElement.style.borderColor = '';
-    field.parentElement.style.boxShadow = '';
+function highlightInvalid(element) {
+    element.parentElement.style.borderColor = 'var(--accent-color)';
+    element.parentElement.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.2)';
 }
 
-function showError(message) {
-    // Create error toast
-    const toast = document.createElement('div');
-    toast.className = 'error-toast';
-    toast.innerHTML = `
-        <i class="mdi mdi-alert-circle"></i>
-        <span>${message}</span>
-    `;
-    
-    // Style the toast
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        z-index: 10000;
-        box-shadow: 0 8px 32px rgba(231, 76, 60, 0.3);
-        animation: slideIn 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                document.body.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
+function removeHighlight(element) {
+    element.parentElement.style.borderColor = '';
+    element.parentElement.style.boxShadow = '';
 }
 
-// Add CSS for animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateY(-100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
+// Quick Actions
+function handleQuickAction(e) {
+    const action = e.currentTarget.dataset.action;
     
-    @keyframes slideOut {
-        from { transform: translateY(0); opacity: 1; }
-        to { transform: translateY(-100%); opacity: 0; }
+    switch(action) {
+        case 'reset':
+            resetForm();
+            break;
+        case 'loadDefaults':
+            loadDefaults();
+            break;
+        case 'swapDimensions':
+            swapDimensions();
+            break;
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);
+}
 
-// Cabinet Calculation Functions
-function calculateWallCabinetParts() {
-    const width = parseFloat(domElements.cabinetWidth.value);
-    const height = parseFloat(domElements.cabinetHeight.value);
-    const depth = parseFloat(domElements.cabinetDepth.value);
-    const shelfCount = parseInt(domElements.shelfCount.value);
+function resetForm() {
+    DOM.cabinetWidth.value = '';
+    DOM.cabinetHeight.value = '';
+    DOM.cabinetDepth.value = '';
+    DOM.shelfCount.value = '2';
+    DOM.craftsmanName.value = '';
+    DOM.clientName.value = '';
+    setCurrentDate();
+    
+    // Reset highlights
+    removeHighlight(DOM.cabinetWidth);
+    removeHighlight(DOM.cabinetHeight);
+    removeHighlight(DOM.cabinetDepth);
+    removeHighlight(DOM.shelfCount);
+    
+    showToast('فرم بازنشانی شد', 'همه مقادیر به حالت اولیه بازگشتند', 'info');
+}
+
+function loadDefaults() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    
+    if (isAerial) {
+        DOM.cabinetWidth.value = CONSTANTS.DEFAULT_AERIAL.width;
+        DOM.cabinetHeight.value = CONSTANTS.DEFAULT_AERIAL.height;
+        DOM.cabinetDepth.value = CONSTANTS.DEFAULT_AERIAL.depth;
+        DOM.shelfCount.value = CONSTANTS.DEFAULT_AERIAL.shelves;
+    } else {
+        DOM.cabinetWidth.value = CONSTANTS.DEFAULT_GROUND.width;
+        DOM.cabinetHeight.value = CONSTANTS.DEFAULT_GROUND.height;
+        DOM.cabinetDepth.value = CONSTANTS.DEFAULT_GROUND.depth;
+        DOM.shelfCount.value = CONSTANTS.DEFAULT_GROUND.shelves;
+        DOM.stretcherHeight.value = CONSTANTS.DEFAULT_GROUND.stretcher;
+    }
+    
+    showToast('مقادیر پیش‌فرض بارگذاری شد', 'ابعاد استاندارد کابینت اعمال شد', 'success');
+}
+
+function swapDimensions() {
+    const width = DOM.cabinetWidth.value;
+    const height = DOM.cabinetHeight.value;
+    
+    DOM.cabinetWidth.value = height;
+    DOM.cabinetHeight.value = width;
+    
+    showToast('ابعاد جابجا شد', 'عرض و ارتفاع با هم عوض شدند', 'info');
+}
+
+// Cabinet Calculations
+function calculateCabinetParts() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    const width = parseFloat(DOM.cabinetWidth.value);
+    const height = parseFloat(DOM.cabinetHeight.value);
+    const depth = parseFloat(DOM.cabinetDepth.value);
+    const shelves = parseInt(DOM.shelfCount.value);
+    const stretcherHeight = parseFloat(DOM.stretcherHeight.value) || 12;
+    const backPanelOffset = parseFloat(DOM.backPanelOffset.value) || (isAerial ? 1.6 : 0.9);
     
     const parts = [];
     
-    // Side panels (بدنه) - 2 pieces
-    parts.push({
-        description: 'بدنه',
-        quantity: 2,
-        width: depth, // عمق = عرض بدنه
-        length: height, // ارتفاع = طول بدنه
-        groove: false,
-        pvcWidth: false,
-        pvcLength: false,
-        attachment: ''
-    });
-    
-    // Top & Bottom panels (سقف و کف) - 2 pieces
-    parts.push({
-        description: 'سقف و کف',
-        quantity: 2,
-        width: depth, // عمق = عرض
-        length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
-        groove: false,
-        pvcWidth: false,
-        pvcLength: false,
-        attachment: ''
-    });
-    
-    // Shelves (طبقه)
-    for (let i = 1; i <= shelfCount; i++) {
+    if (isAerial) {
+        // Aerial Cabinet Parts
         parts.push({
-            description: `طبقه ${i}`,
-            quantity: 1,
-            width: depth - 2, // عمق - 2 = عرض
-            length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
-            groove: false,
-            pvcWidth: false,
-            pvcLength: false,
-            attachment: ''
+            id: `body_${Date.now()}`,
+            description: 'بدنه',
+            quantity: 2,
+            width: depth,
+            height: height,
+            groove: true,
+            pvc: 'both',
+            notes: ''
         });
-    }
-    
-    return parts;
-}
-
-function calculateFloorCabinetParts() {
-    const width = parseFloat(domElements.cabinetWidth.value);
-    const height = parseFloat(domElements.cabinetHeight.value);
-    const depth = parseFloat(domElements.cabinetDepth.value);
-    const shelfCount = Math.min(parseInt(domElements.shelfCount.value), 1); // فقط یک طبقه برای کابینت زمینی
-    
-    const parts = [];
-    
-    // Side panels (بدنه) - 2 pieces (ارتفاع - 1.6)
-    parts.push({
-        description: 'بدنه',
-        quantity: 2,
-        width: depth, // عمق = عرض بدنه
-        length: (height - 1.6).toFixed(1), // ارتفاع - 1.6 = طول بدنه
-        groove: false,
-        pvcWidth: false,
-        pvcLength: false,
-        attachment: ''
-    });
-    
-    // Bottom panel (کف) - 1 piece
-    parts.push({
-        description: 'کف',
-        quantity: 1,
-        width: depth, // عمق = عرض
-        length: width.toFixed(1), // عرض کابینت = طول
-        groove: false,
-        pvcWidth: false,
-        pvcLength: false,
-        attachment: ''
-    });
-    
-    // Stretchers (تیرک) - 2 pieces (عرض - 3.2 و عمق ۱۲)
-    parts.push({
-        description: 'تیرک',
-        quantity: 2,
-        width: 12, // عمق ثابت ۱۲ سانتی‌متر
-        length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
-        groove: false,
-        pvcWidth: false,
-        pvcLength: false,
-        attachment: ''
-    });
-    
-    // Shelf (طبقه) - 1 piece فقط اگر تعداد طبقات > 0
-    if (shelfCount > 0) {
-        parts.push({
-            description: 'طبقه',
-            quantity: 1,
-            width: depth - 2, // عمق - 2 = عرض
-            length: (width - 3.2).toFixed(1), // عرض کابینت - 3.2 = طول
-            groove: false,
-            pvcWidth: false,
-            pvcLength: false,
-            attachment: ''
-        });
-    }
-    
-    return parts;
-}
-
-// 3D Schematic Drawing Function
-function create3DSchematic(cabinetType, width, height, depth, shelfCount) {
-    const svgNS = "http://www.w3.org/2000/svg";
-    const container = document.createElement('div');
-    container.className = 'cabinet-schematic';
-    
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 200 150');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    
-    // Main rectangle (cabinet body)
-    const cabinetRect = document.createElementNS(svgNS, 'rect');
-    cabinetRect.setAttribute('x', '20');
-    cabinetRect.setAttribute('y', '20');
-    cabinetRect.setAttribute('width', cabinetType === 'wall' ? '120' : '140');
-    cabinetRect.setAttribute('height', cabinetType === 'wall' ? '80' : '100');
-    cabinetRect.setAttribute('fill', 'none');
-    cabinetRect.setAttribute('stroke', '#5d4037');
-    cabinetRect.setAttribute('stroke-width', '2');
-    svg.appendChild(cabinetRect);
-    
-    // Depth indicator line (diagonal)
-    const depthLine = document.createElementNS(svgNS, 'line');
-    depthLine.setAttribute('x1', cabinetType === 'wall' ? '140' : '160');
-    depthLine.setAttribute('y1', '20');
-    depthLine.setAttribute('x2', cabinetType === 'wall' ? '160' : '180');
-    depthLine.setAttribute('y2', '40');
-    depthLine.setAttribute('stroke', '#3498db');
-    depthLine.setAttribute('stroke-width', '1.5');
-    depthLine.setAttribute('stroke-dasharray', '4,2');
-    svg.appendChild(depthLine);
-    
-    // Labels
-    const addLabel = (text, x, y, fontSize = '10') => {
-        const label = document.createElementNS(svgNS, 'text');
-        label.setAttribute('x', x);
-        label.setAttribute('y', y);
-        label.setAttribute('font-size', fontSize);
-        label.setAttribute('fill', '#2c3e50');
-        label.setAttribute('text-anchor', 'middle');
-        label.setAttribute('font-weight', 'bold');
-        label.textContent = text;
-        svg.appendChild(label);
-    };
-    
-    // Height label (left side)
-    addLabel(`${height}`, cabinetType === 'wall' ? '15' : '15', cabinetType === 'wall' ? '60' : '70', '11');
-    
-    // Width label (top side)
-    addLabel(`${width}`, cabinetType === 'wall' ? '80' : '90', '12', '11');
-    
-    // Depth label (diagonal)
-    addLabel(`${depth}`, cabinetType === 'wall' ? '150' : '170', '28', '10');
-    
-    // Shelves (dashed horizontal lines)
-    if (shelfCount > 0) {
-        const shelfSpacing = (cabinetType === 'wall' ? 80 : 100) / (shelfCount + 1);
         
-        for (let i = 1; i <= shelfCount; i++) {
-            const shelfY = 20 + (shelfSpacing * i);
-            const shelf = document.createElementNS(svgNS, 'line');
-            shelf.setAttribute('x1', '20');
-            shelf.setAttribute('y1', shelfY);
-            shelf.setAttribute('x2', cabinetType === 'wall' ? '140' : '160');
-            shelf.setAttribute('y2', shelfY);
-            shelf.setAttribute('stroke', '#e74c3c');
-            shelf.setAttribute('stroke-width', '1');
-            shelf.setAttribute('stroke-dasharray', '3,3');
+        parts.push({
+            id: `top_bottom_${Date.now()}`,
+            description: 'سقف و کف',
+            quantity: 2,
+            width: depth,
+            height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+            groove: false,
+            pvc: 'both',
+            notes: ''
+        });
+        
+        for (let i = 1; i <= shelves; i++) {
+            parts.push({
+                id: `shelf_${i}_${Date.now()}`,
+                description: `طبقه ${i}`,
+                quantity: 1,
+                width: depth - 2,
+                height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+                groove: false,
+                pvc: 'front',
+                notes: ''
+            });
+        }
+        
+        // Back panel (سه میل)
+        parts.push({
+            id: `back_panel_${Date.now()}`,
+            description: 'سه میل',
+            quantity: 1,
+            width: (width - CONSTANTS.BOARD_THICKNESS).toFixed(1),
+            height: (height - backPanelOffset).toFixed(1),
+            groove: false,
+            pvc: 'none',
+            notes: 'ضخامت ۳ میلی‌متر'
+        });
+        
+    } else {
+        // Ground Cabinet Parts
+        parts.push({
+            id: `body_${Date.now()}`,
+            description: 'بدنه',
+            quantity: 2,
+            width: depth,
+            height: (height - CONSTANTS.BOARD_THICKNESS).toFixed(1),
+            groove: true,
+            pvc: 'both',
+            notes: ''
+        });
+        
+        parts.push({
+            id: `bottom_${Date.now()}`,
+            description: 'کف',
+            quantity: 1,
+            width: depth,
+            height: width.toFixed(1),
+            groove: false,
+            pvc: 'both',
+            notes: ''
+        });
+        
+        parts.push({
+            id: `stretcher_${Date.now()}`,
+            description: 'تیرک',
+            quantity: 2,
+            width: stretcherHeight,
+            height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+            groove: false,
+            pvc: 'both',
+            notes: ''
+        });
+        
+        if (shelves > 0) {
+            parts.push({
+                id: `shelf_${Date.now()}`,
+                description: 'طبقه',
+                quantity: 1,
+                width: depth - 2,
+                height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
+                groove: false,
+                pvc: 'front',
+                notes: ''
+            });
+        }
+        
+        // Back panel (سه میل)
+        parts.push({
+            id: `back_panel_${Date.now()}`,
+            description: 'سه میل',
+            quantity: 1,
+            width: (width - CONSTANTS.BOARD_THICKNESS).toFixed(1),
+            height: (height - backPanelOffset).toFixed(1),
+            groove: false,
+            pvc: 'none',
+            notes: 'ضخامت ۳ میلی‌متر'
+        });
+    }
+    
+    return parts;
+}
+
+// 3D Preview Functions
+function show3DPreview() {
+    if (!validateDimensions() || !validateShelves()) {
+        showToast('خطا در ابعاد', 'لطفاً ابعاد معتبر وارد کنید', 'error');
+        return;
+    }
+    
+    // Update preview values
+    DOM.previewWidth.textContent = DOM.cabinetWidth.value;
+    DOM.previewHeight.textContent = DOM.cabinetHeight.value;
+    DOM.previewDepth.textContent = DOM.cabinetDepth.value;
+    DOM.previewShelves.textContent = DOM.shelfCount.value;
+    
+    // Generate SVG
+    generate3DSVG();
+    
+    // Show modal
+    DOM.preview3DModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function hide3DPreview() {
+    DOM.preview3DModal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function generate3DSVG() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    const width = parseFloat(DOM.cabinetWidth.value);
+    const height = parseFloat(DOM.cabinetHeight.value);
+    const depth = parseFloat(DOM.cabinetDepth.value);
+    const shelves = parseInt(DOM.shelfCount.value);
+    
+    // Clear previous SVG
+    DOM.preview3DSVG.innerHTML = '';
+    
+    // Create SVG element
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 400 300");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    
+    // Colors based on theme
+    const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
+    const fillColor = AppState.currentTheme === 'dark' ? '#34495e' : '#f8f9fa';
+    const accentColor = '#e74c3c';
+    const woodColor = '#8b4513';
+    
+    // Main cabinet rectangle (front view)
+    const frontRect = document.createElementNS(svgNS, "rect");
+    frontRect.setAttribute("x", "50");
+    frontRect.setAttribute("y", "50");
+    frontRect.setAttribute("width", "200");
+    frontRect.setAttribute("height", "200");
+    frontRect.setAttribute("fill", fillColor);
+    frontRect.setAttribute("stroke", strokeColor);
+    frontRect.setAttribute("stroke-width", "3");
+    frontRect.setAttribute("rx", "5");
+    svg.appendChild(frontRect);
+    
+    // Depth representation (perspective lines)
+    const depthLine1 = document.createElementNS(svgNS, "line");
+    depthLine1.setAttribute("x1", "250");
+    depthLine1.setAttribute("y1", "50");
+    depthLine1.setAttribute("x2", "300");
+    depthLine1.setAttribute("y2", "30");
+    depthLine1.setAttribute("stroke", woodColor);
+    depthLine1.setAttribute("stroke-width", "2");
+    depthLine1.setAttribute("stroke-dasharray", "5,5");
+    svg.appendChild(depthLine1);
+    
+    const depthLine2 = document.createElementNS(svgNS, "line");
+    depthLine2.setAttribute("x1", "250");
+    depthLine2.setAttribute("y1", "250");
+    depthLine2.setAttribute("x2", "300");
+    depthLine2.setAttribute("y2", "230");
+    depthLine2.setAttribute("stroke", woodColor);
+    depthLine2.setAttribute("stroke-width", "2");
+    depthLine2.setAttribute("stroke-dasharray", "5,5");
+    svg.appendChild(depthLine2);
+    
+    // Shelves (dashed lines)
+    if (shelves > 0) {
+        const shelfSpacing = 200 / (shelves + 1);
+        for (let i = 1; i <= shelves; i++) {
+            const shelfY = 50 + (shelfSpacing * i);
+            const shelf = document.createElementNS(svgNS, "line");
+            shelf.setAttribute("x1", "50");
+            shelf.setAttribute("y1", shelfY);
+            shelf.setAttribute("x2", "250");
+            shelf.setAttribute("y2", shelfY);
+            shelf.setAttribute("stroke", accentColor);
+            shelf.setAttribute("stroke-width", "2");
+            shelf.setAttribute("stroke-dasharray", "8,4");
             svg.appendChild(shelf);
         }
     }
     
-    // For floor cabinet, add bottom stretcher indicator
-    if (cabinetType === 'floor') {
-        const stretcher = document.createElementNS(svgNS, 'line');
-        stretcher.setAttribute('x1', '20');
-        stretcher.setAttribute('y1', '110');
-        stretcher.setAttribute('x2', '160');
-        stretcher.setAttribute('y2', '110');
-        stretcher.setAttribute('stroke', '#27ae60');
-        stretcher.setAttribute('stroke-width', '2');
-        stretcher.setAttribute('stroke-dasharray', '6,3');
-        svg.appendChild(stretcher);
-    }
+    // Dimension labels
+    const addDimensionLabel = (text, x1, y1, x2, y2, offsetX = 0, offsetY = 0) => {
+        // Line
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", strokeColor);
+        line.setAttribute("stroke-width", "1");
+        line.setAttribute("stroke-dasharray", "3,3");
+        svg.appendChild(line);
+        
+        // Arrow heads
+        const arrow1 = document.createElementNS(svgNS, "polygon");
+        arrow1.setAttribute("points", `${x1},${y1} ${x1-5},${y1-5} ${x1+5},${y1-5}`);
+        arrow1.setAttribute("fill", strokeColor);
+        svg.appendChild(arrow1);
+        
+        const arrow2 = document.createElementNS(svgNS, "polygon");
+        arrow2.setAttribute("points", `${x2},${y2} ${x2-5},${y2-5} ${x2+5},${y2-5}`);
+        arrow2.setAttribute("fill", strokeColor);
+        svg.appendChild(arrow2);
+        
+        // Text
+        const textEl = document.createElementNS(svgNS, "text");
+        textEl.setAttribute("x", (x1 + x2) / 2 + offsetX);
+        textEl.setAttribute("y", (y1 + y2) / 2 + offsetY);
+        textEl.setAttribute("text-anchor", "middle");
+        textEl.setAttribute("dominant-baseline", "middle");
+        textEl.setAttribute("fill", strokeColor);
+        textEl.setAttribute("font-size", "14");
+        textEl.setAttribute("font-weight", "bold");
+        textEl.textContent = text;
+        svg.appendChild(textEl);
+    };
     
-    svg.appendChild(cabinetRect);
-    container.appendChild(svg);
+    // Width dimension
+    addDimensionLabel(`${width}cm`, 50, 30, 250, 30, 0, -20);
     
-    return container;
+    // Height dimension
+    addDimensionLabel(`${height}cm`, 30, 50, 30, 250, -20, 0);
+    
+    // Depth dimension
+    addDimensionLabel(`${depth}cm`, 250, 50, 300, 30, 10, -10);
+    
+    // Cabinet type indicator
+    const typeText = document.createElementNS(svgNS, "text");
+    typeText.setAttribute("x", "150");
+    typeText.setAttribute("y", "280");
+    typeText.setAttribute("text-anchor", "middle");
+    typeText.setAttribute("fill", accentColor);
+    typeText.setAttribute("font-size", "16");
+    typeText.setAttribute("font-weight", "bold");
+    typeText.textContent = isAerial ? "کابینت دیواری (باکس هوایی)" : "کابینت زمینی (باکس زمینی)";
+    svg.appendChild(typeText);
+    
+    DOM.preview3DSVG.appendChild(svg);
 }
 
-// Table Generation Functions
-function generateCabinetTable() {
-    if (!validateForm()) {
+// Table Management
+function calculateAndShow() {
+    if (!validateDimensions() || !validateShelves()) {
+        showToast('خطا در اعتبارسنجی', 'لطفاً تمام فیلدها را به درستی پر کنید', 'error');
         return;
     }
     
-    const isWallCabinet = document.getElementById('wallCabinet').checked;
-    const cabinetType = isWallCabinet ? 'wall' : 'floor';
-    const cabinetTypeName = isWallCabinet ? 'دیواری' : 'زمینی';
-    
-    // Get current cabinet data
-    const width = parseFloat(domElements.cabinetWidth.value);
-    const height = parseFloat(domElements.cabinetHeight.value);
-    const depth = parseFloat(domElements.cabinetDepth.value);
-    const shelfCount = parseInt(domElements.shelfCount.value);
-    const craftsman = domElements.craftsmanName.value || 'تعیین نشده';
-    const client = domElements.clientName.value || 'تعیین نشده';
-    const date = domElements.projectDate.value || convertToPersianDate(new Date());
-    
-    // Calculate parts based on cabinet type
-    const parts = isWallCabinet ? calculateWallCabinetParts() : calculateFloorCabinetParts();
-    
-    // Create cabinet object
-    const cabinet = {
-        id: AppState.currentCabinetId++,
-        type: cabinetType,
-        typeName: cabinetTypeName,
-        width,
-        height,
-        depth,
-        shelfCount,
-        parts,
-        craftsman,
-        client,
-        date,
-        timestamp: new Date().getTime()
-    };
-    
-    // Add to cabinets array
-    AppState.cabinets.push(cabinet);
-    
-    // Update UI
-    updateResultsMetadata(craftsman, client, date);
-    updateCabinetCount();
+    const cabinet = createCabinetObject();
+    AppState.cabinets = [cabinet];
+    updateResultsDisplay();
     renderTable();
     
-    // Show results section if hidden
-    domElements.resultsSection.style.display = 'block';
-    
-    showSuccess(`کابینت ${cabinetTypeName} به جدول اضافه شد`);
+    showToast('محاسبه انجام شد', 'کابینت با موفقیت محاسبه شد', 'success');
 }
 
 function addToTable() {
-    generateCabinetTable();
-}
-
-function updateResultsMetadata(craftsman, client, date) {
-    domElements.resultCraftsman.textContent = craftsman;
-    domElements.resultClient.textContent = client;
-    domElements.resultDate.textContent = date;
-}
-
-function updateCabinetCount() {
-    const count = AppState.cabinets.length;
-    domElements.cabinetCount.textContent = count;
-    
-    if (count > 0) {
-        domElements.resultsSubtitle.textContent = `لیست ${count} کابینت محاسبه شده`;
-    } else {
-        domElements.resultsSubtitle.textContent = 'لیست تمام کابینت‌های محاسبه شده';
+    if (!validateDimensions() || !validateShelves()) {
+        showToast('خطا در اعتبارسنجی', 'لطفاً تمام فیلدها را به درستی پر کنید', 'error');
+        return;
     }
+    
+    const cabinet = createCabinetObject();
+    AppState.cabinets.push(cabinet);
+    updateResultsDisplay();
+    renderTable();
+    
+    showToast('کابینت اضافه شد', 'کابینت جدید به جدول اضافه شد', 'success');
+}
+
+function createCabinetObject() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    const width = parseFloat(DOM.cabinetWidth.value);
+    const height = parseFloat(DOM.cabinetHeight.value);
+    const depth = parseFloat(DOM.cabinetDepth.value);
+    const shelves = parseInt(DOM.shelfCount.value);
+    const craftsman = DOM.craftsmanName.value || 'تعیین نشده';
+    const client = DOM.clientName.value || 'تعیین نشده';
+    const date = DOM.projectDate.value || convertToPersianDate(new Date());
+    
+    return {
+        id: AppState.currentCabinetId++,
+        type: isAerial ? 'aerial' : 'ground',
+        typeName: isAerial ? 'دیواری' : 'زمینی',
+        width,
+        height,
+        depth,
+        shelves,
+        parts: calculateCabinetParts(),
+        craftsman,
+        client,
+        date,
+        timestamp: Date.now(),
+        number: AppState.cabinets.length + 1
+    };
+}
+
+function updateResultsDisplay() {
+    const lastCabinet = AppState.cabinets[AppState.cabinets.length - 1];
+    
+    DOM.resultCraftsman.textContent = lastCabinet.craftsman;
+    DOM.resultClient.textContent = lastCabinet.client;
+    DOM.resultDate.textContent = lastCabinet.date;
+    DOM.cabinetCount.textContent = AppState.cabinets.length;
+    DOM.resultsSubtitle.textContent = `لیست ${AppState.cabinets.length} کابینت محاسبه شده`;
+    
+    // Calculate totals
+    let totalParts = 0;
+    let totalArea = 0;
+    
+    AppState.cabinets.forEach(cabinet => {
+        cabinet.parts.forEach(part => {
+            totalParts += part.quantity;
+            totalArea += (part.width * part.height * part.quantity) / 10000; // Convert to m²
+        });
+    });
+    
+    DOM.totalParts.textContent = totalParts;
+    DOM.totalArea.textContent = totalArea.toFixed(2);
 }
 
 function renderTable() {
-    const tableBody = domElements.tableBody;
-    
     if (AppState.cabinets.length === 0) {
-        tableBody.innerHTML = `
+        DOM.tableBody.innerHTML = `
             <tr class="empty-table-message">
                 <td colspan="9">
                     <div class="empty-state">
                         <i class="mdi mdi-table-large"></i>
                         <p>هنوز کابینتی به جدول اضافه نشده است</p>
-                        <small>از دکمه "محاسبه جدول" یا "افزودن به جدول" استفاده کنید</small>
+                        <small>از دکمه "محاسبه و نمایش" یا "افزودن به جدول" استفاده کنید</small>
                     </div>
                 </td>
             </tr>
@@ -528,289 +823,336 @@ function renderTable() {
         return;
     }
     
-    tableBody.innerHTML = '';
+    let tableHTML = '';
     
-    // Group cabinets by type for numbering
-    const cabinetCounts = {
-        wall: 0,
-        floor: 0
-    };
-    
-    AppState.cabinets.forEach(cabinet => {
-        cabinetCounts[cabinet.type]++;
-        const cabinetNumber = cabinetCounts[cabinet.type];
+    AppState.cabinets.forEach((cabinet, cabinetIndex) => {
+        // Calculate cabinet number
+        const cabinetNumber = cabinetIndex + 1;
         
-        // Create 3D schematic
-        const schematic = create3DSchematic(cabinet.type, cabinet.width, cabinet.height, cabinet.depth, cabinet.shelfCount);
-        
-        // Add cabinet header row with rowspan
-        const headerRow = document.createElement('tr');
-        headerRow.className = 'cabinet-header-row';
-        headerRow.innerHTML = `
-            <td rowspan="${cabinet.parts.length}" class="cabinet-3d-cell">
-                <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
-                ${schematic.outerHTML}
-                <div class="cabinet-dimensions">
-                    <small>${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر</small>
-                </div>
-            </td>
-            <td><input type="checkbox" class="groove-checkbox"></td>
-            <td><input type="checkbox" class="pvc-checkbox" data-type="width"></td>
-            <td><input type="checkbox" class="pvc-checkbox" data-type="length"></td>
-            <td>${cabinet.parts[0].description}</td>
-            <td>${cabinet.parts[0].quantity}</td>
-            <td>${cabinet.parts[0].width}</td>
-            <td>${cabinet.parts[0].length}</td>
-            <td><input type="text" class="attachment-input" placeholder="-" value="${cabinet.parts[0].attachment}"></td>
-        `;
-        tableBody.appendChild(headerRow);
-        
-        // Add remaining parts rows
-        for (let i = 1; i < cabinet.parts.length; i++) {
-            const part = cabinet.parts[i];
-            const row = document.createElement('tr');
-            row.className = 'cabinet-part-row';
-            row.innerHTML = `
-                <td><input type="checkbox" class="groove-checkbox"></td>
-                <td><input type="checkbox" class="pvc-checkbox" data-type="width"></td>
-                <td><input type="checkbox" class="pvc-checkbox" data-type="length"></td>
-                <td>${part.description}</td>
-                <td>${part.quantity}</td>
-                <td>${part.width}</td>
-                <td>${part.length}</td>
-                <td><input type="text" class="attachment-input" placeholder="-" value="${part.attachment}"></td>
+        cabinet.parts.forEach((part, partIndex) => {
+            const isFirstRow = partIndex === 0;
+            
+            tableHTML += `
+                <tr data-cabinet-id="${cabinet.id}" data-part-id="${part.id}">
+                    ${isFirstRow ? `
+                        <td rowspan="${cabinet.parts.length}" class="cabinet-3d-cell">
+                            <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
+                            <div class="cabinet-schematic" id="schematic-${cabinet.id}"></div>
+                            <div class="cabinet-dimensions">
+                                ${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر
+                            </div>
+                        </td>
+                    ` : ''}
+                    <td>${part.description}</td>
+                    <td>${part.quantity}</td>
+                    <td>${part.width}</td>
+                    <td>${part.height}</td>
+                    <td>
+                        <input type="checkbox" class="groove-checkbox" ${part.groove ? 'checked' : ''}>
+                    </td>
+                    <td>
+                        <select class="pvc-select">
+                            <option value="none" ${part.pvc === 'none' ? 'selected' : ''}>ندارد</option>
+                            <option value="front" ${part.pvc === 'front' ? 'selected' : ''}>جلو</option>
+                            <option value="both" ${part.pvc === 'both' ? 'selected' : ''}>هر دو طرف</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="attachment-input" value="${part.notes}" placeholder="توضیحات...">
+                    </td>
+                    <td class="col-actions">
+                        <div class="row-actions">
+                            <button class="action-btn edit" title="ویرایش">
+                                <i class="mdi mdi-pencil"></i>
+                            </button>
+                            <button class="action-btn delete" title="حذف">
+                                <i class="mdi mdi-delete"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
             `;
-            tableBody.appendChild(row);
-        }
+        });
     });
     
-    // Add event listeners to checkboxes and inputs
+    // Add custom rows
+    AppState.customRows.forEach(row => {
+        tableHTML += `
+            <tr data-custom-id="${row.id}">
+                <td>
+                    <div class="cabinet-number custom-row">سفارشی</div>
+                </td>
+                <td><input type="text" class="part-name-input" value="${row.description}"></td>
+                <td><input type="number" class="quantity-input" value="${row.quantity}" min="1"></td>
+                <td><input type="number" class="width-input" value="${row.width}" step="0.1"></td>
+                <td><input type="number" class="height-input" value="${row.height}" step="0.1"></td>
+                <td><input type="checkbox" class="groove-checkbox" ${row.groove ? 'checked' : ''}></td>
+                <td>
+                    <select class="pvc-select">
+                        <option value="none" ${row.pvc === 'none' ? 'selected' : ''}>ندارد</option>
+                        <option value="front" ${row.pvc === 'front' ? 'selected' : ''}>جلو</option>
+                        <option value="both" ${row.pvc === 'both' ? 'selected' : ''}>هر دو طرف</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="attachment-input" value="${row.notes}" placeholder="توضیحات...">
+                </td>
+                <td class="col-actions">
+                    <div class="row-actions">
+                        <button class="action-btn delete" title="حذف">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    DOM.tableBody.innerHTML = tableHTML;
+    
+    // Generate 3D schematics
+    AppState.cabinets.forEach(cabinet => {
+        generateTable3DSVG(cabinet);
+    });
+    
+    // Add event listeners to table elements
     addTableEventListeners();
+}
+
+function generateTable3DSVG(cabinet) {
+    const container = document.getElementById(`schematic-${cabinet.id}`);
+    if (!container) return;
+    
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 150 100");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    
+    // Colors
+    const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
+    const fillColor = AppState.currentTheme === 'dark' ? '#2c3e50' : '#f8f9fa';
+    
+    // Simplified cabinet representation
+    const rect = document.createElementNS(svgNS, "rect");
+    rect.setAttribute("x", "25");
+    rect.setAttribute("y", "25");
+    rect.setAttribute("width", "100");
+    rect.setAttribute("height", "50");
+    rect.setAttribute("fill", fillColor);
+    rect.setAttribute("stroke", strokeColor);
+    rect.setAttribute("stroke-width", "2");
+    svg.appendChild(rect);
+    
+    // Shelves
+    if (cabinet.shelves > 0) {
+        const shelfSpacing = 50 / (cabinet.shelves + 1);
+        for (let i = 1; i <= cabinet.shelves; i++) {
+            const shelfY = 25 + (shelfSpacing * i);
+            const shelf = document.createElementNS(svgNS, "line");
+            shelf.setAttribute("x1", "25");
+            shelf.setAttribute("y1", shelfY);
+            shelf.setAttribute("x2", "125");
+            shelf.setAttribute("y2", shelfY);
+            shelf.setAttribute("stroke", "#e74c3c");
+            shelf.setAttribute("stroke-width", "1");
+            shelf.setAttribute("stroke-dasharray", "3,3");
+            svg.appendChild(shelf);
+        }
+    }
+    
+    // Depth indicator
+    const depthLine = document.createElementNS(svgNS, "line");
+    depthLine.setAttribute("x1", "125");
+    depthLine.setAttribute("y1", "25");
+    depthLine.setAttribute("x2", "140");
+    depthLine.setAttribute("y2", "15");
+    depthLine.setAttribute("stroke", strokeColor);
+    depthLine.setAttribute("stroke-width", "1.5");
+    depthLine.setAttribute("stroke-dasharray", "4,2");
+    svg.appendChild(depthLine);
+    
+    container.appendChild(svg);
 }
 
 function addTableEventListeners() {
     // Groove checkboxes
     document.querySelectorAll('.groove-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
-            // You can add additional logic here if needed
-            console.log('Groove checkbox changed:', this.checked);
+            const row = this.closest('tr');
+            const cabinetId = row.dataset.cabinetId;
+            const partId = row.dataset.partId;
+            
+            if (cabinetId && partId) {
+                const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
+                if (cabinet) {
+                    const part = cabinet.parts.find(p => p.id === partId);
+                    if (part) {
+                        part.groove = this.checked;
+                    }
+                }
+            }
         });
     });
     
-    // PVC checkboxes
-    document.querySelectorAll('.pvc-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            console.log('PVC checkbox changed:', this.checked, this.dataset.type);
+    // PVC selects
+    document.querySelectorAll('.pvc-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const row = this.closest('tr');
+            const cabinetId = row.dataset.cabinetId;
+            const partId = row.dataset.partId;
+            
+            if (cabinetId && partId) {
+                const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
+                if (cabinet) {
+                    const part = cabinet.parts.find(p => p.id === partId);
+                    if (part) {
+                        part.pvc = this.value;
+                    }
+                }
+            }
         });
     });
     
     // Attachment inputs
     document.querySelectorAll('.attachment-input').forEach(input => {
         input.addEventListener('input', function() {
-            console.log('Attachment input changed:', this.value);
+            const row = this.closest('tr');
+            const cabinetId = row.dataset.cabinetId;
+            const partId = row.dataset.partId;
+            
+            if (cabinetId && partId) {
+                const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
+                if (cabinet) {
+                    const part = cabinet.parts.find(p => p.id === partId);
+                    if (part) {
+                        part.notes = this.value;
+                    }
+                }
+            }
         });
     });
+    
+    // Edit buttons
+    document.querySelectorAll('.action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const cabinetId = row.dataset.cabinetId;
+            // Implement edit functionality
+            showToast('ویرایش', 'امکان ویرایش به زودی اضافه خواهد شد', 'info');
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const cabinetId = row.dataset.cabinetId;
+            const partId = row.dataset.partId;
+            const customId = row.dataset.customId;
+            
+            if (customId) {
+                // Remove custom row
+                AppState.customRows = AppState.customRows.filter(r => r.id !== customId);
+                row.remove();
+                updateResultsDisplay();
+                showToast('ردیف حذف شد', 'ردیف سفارشی با موفقیت حذف شد', 'success');
+            } else if (cabinetId && partId) {
+                // Remove part from cabinet
+                const cabinet = AppState.cabinets.find(c => c.id == cabinetId);
+                if (cabinet) {
+                    cabinet.parts = cabinet.parts.filter(p => p.id !== partId);
+                    if (cabinet.parts.length === 0) {
+                        // Remove entire cabinet if no parts left
+                        AppState.cabinets = AppState.cabinets.filter(c => c.id != cabinetId);
+                    }
+                    renderTable();
+                    updateResultsDisplay();
+                    showToast('قطعه حذف شد', 'قطعه با موفقیت حذف شد', 'success');
+                }
+            }
+        });
+    });
+    
+    // Custom row inputs
+    document.querySelectorAll('.part-name-input, .quantity-input, .width-input, .height-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            const customId = row.dataset.customId;
+            const rowData = AppState.customRows.find(r => r.id === customId);
+            
+            if (rowData) {
+                if (this.classList.contains('part-name-input')) {
+                    rowData.description = this.value;
+                } else if (this.classList.contains('quantity-input')) {
+                    rowData.quantity = parseInt(this.value) || 1;
+                } else if (this.classList.contains('width-input')) {
+                    rowData.width = parseFloat(this.value) || 0;
+                } else if (this.classList.contains('height-input')) {
+                    rowData.height = parseFloat(this.value) || 0;
+                }
+                updateResultsDisplay();
+            }
+        });
+    });
+}
+
+function addCustomRow() {
+    const newRow = {
+        id: `custom_${Date.now()}`,
+        description: 'قطعه سفارشی',
+        quantity: 1,
+        width: 0,
+        height: 0,
+        groove: false,
+        pvc: 'none',
+        notes: ''
+    };
+    
+    AppState.customRows.push(newRow);
+    renderTable();
+    showToast('ردیف اضافه شد', 'ردیف سفارشی جدید اضافه شد', 'success');
 }
 
 function clearTable() {
-    if (AppState.cabinets.length === 0) {
-        showError('جدول در حال حاضر خالی است');
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
+        showToast('جدول خالی است', 'جدول در حال حاضر خالی است', 'info');
         return;
     }
     
-    if (!confirm('آیا از پاک کردن تمام جدول اطمینان دارید؟ این عمل قابل بازگشت نیست.')) {
-        return;
+    if (confirm('آیا از پاک کردن کامل جدول اطمینان دارید؟ این عمل قابل بازگشت نیست.')) {
+        AppState.cabinets = [];
+        AppState.customRows = [];
+        AppState.currentCabinetId = 1;
+        updateResultsDisplay();
+        renderTable();
+        showToast('جدول پاک شد', 'تمام داده‌های جدول حذف شدند', 'success');
     }
-    
-    AppState.cabinets = [];
-    AppState.currentCabinetId = 1;
-    updateCabinetCount();
-    renderTable();
-    
-    showSuccess('جدول با موفقیت پاک شد');
 }
 
-// Project Management
-function saveProject() {
-    if (AppState.cabinets.length === 0) {
-        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
-        return;
-    }
+function filterTable() {
+    const searchTerm = DOM.tableSearch.value.toLowerCase();
+    const rows = DOM.tableBody.querySelectorAll('tr');
     
-    const craftsman = domElements.craftsmanName.value || 'تعیین نشده';
-    const client = domElements.clientName.value || 'تعیین نشده';
-    const date = domElements.projectDate.value || convertToPersianDate(new Date());
-    
-    // Create project object
-    const project = {
-        id: Date.now(),
-        name: `پروژه ${new Date().toLocaleDateString('fa-IR')}`,
-        cabinets: [...AppState.cabinets],
-        craftsman,
-        client,
-        date,
-        timestamp: new Date().getTime(),
-        totalCabinets: AppState.cabinets.length
-    };
-    
-    // Add to saved projects
-    AppState.savedProjects.push(project);
-    
-    // Save to localStorage
-    localStorage.setItem('aquaDrawerProjects', JSON.stringify(AppState.savedProjects));
-    
-    // Update UI
-    loadSavedProjects();
-    
-    // Show success message
-    showSuccess('پروژه با موفقیت ذخیره شد');
-}
-
-function loadSavedProjects() {
-    const saved = localStorage.getItem('aquaDrawerProjects');
-    if (saved) {
-        try {
-            AppState.savedProjects = JSON.parse(saved);
-        } catch (e) {
-            console.error('Error loading saved projects:', e);
-            AppState.savedProjects = [];
-        }
-    }
-    
-    renderProjectsList();
-}
-
-function renderProjectsList() {
-    const container = domElements.projectsList;
-    
-    if (AppState.savedProjects.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="mdi mdi-folder-open-outline"></i>
-                <p>هیچ پروژه‌ای ذخیره نشده است</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = AppState.savedProjects.map(project => `
-        <div class="project-item" data-id="${project.id}">
-            <div class="project-info">
-                <h4>${project.name}</h4>
-                <div class="project-meta">
-                    <span><i class="mdi mdi-account-hard-hat"></i> ${project.craftsman}</span>
-                    <span><i class="mdi mdi-calendar"></i> ${project.date}</span>
-                    <span><i class="mdi mdi-cube-outline"></i> ${project.totalCabinets} کابینت</span>
-                    <span><i class="mdi mdi-clock"></i> ${new Date(project.timestamp).toLocaleTimeString('fa-IR')}</span>
-                </div>
-            </div>
-            <div class="project-actions">
-                <button class="project-btn load-project" title="بارگذاری">
-                    <i class="mdi mdi-folder-open"></i>
-                </button>
-                <button class="project-btn delete-project" title="حذف">
-                    <i class="mdi mdi-delete"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-    
-    // Add event listeners to project buttons
-    container.querySelectorAll('.load-project').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const projectId = parseInt(this.closest('.project-item').dataset.id);
-            loadProject(projectId);
-        });
-    });
-    
-    container.querySelectorAll('.delete-project').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const projectId = parseInt(this.closest('.project-item').dataset.id);
-            deleteProject(projectId);
-        });
-    });
-}
-
-function loadProject(projectId) {
-    const project = AppState.savedProjects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    // Clear current table
-    AppState.cabinets = [...project.cabinets];
-    AppState.currentCabinetId = Math.max(...project.cabinets.map(c => c.id)) + 1;
-    
-    // Set form values from first cabinet
-    if (project.cabinets.length > 0) {
-        const firstCabinet = project.cabinets[0];
-        domElements.cabinetWidth.value = firstCabinet.width;
-        domElements.cabinetHeight.value = firstCabinet.height;
-        domElements.cabinetDepth.value = firstCabinet.depth;
-        domElements.shelfCount.value = firstCabinet.shelfCount;
-        domElements.craftsmanName.value = project.craftsman;
-        domElements.clientName.value = project.client;
-        domElements.projectDate.value = project.date;
+    rows.forEach(row => {
+        if (row.classList.contains('empty-table-message')) return;
         
-        // Set cabinet type
-        if (firstCabinet.type === 'wall') {
-            document.getElementById('wallCabinet').checked = true;
-        } else {
-            document.getElementById('floorCabinet').checked = true;
-        }
-    }
-    
-    // Update UI
-    updateResultsMetadata(project.craftsman, project.client, project.date);
-    updateCabinetCount();
-    renderTable();
-    
-    // Show results section
-    domElements.resultsSection.style.display = 'block';
-    
-    showSuccess('پروژه با موفقیت بارگذاری شد');
-}
-
-function deleteProject(projectId) {
-    if (!confirm('آیا از حذف این پروژه اطمینان دارید؟')) {
-        return;
-    }
-    
-    AppState.savedProjects = AppState.savedProjects.filter(p => p.id !== projectId);
-    localStorage.setItem('aquaDrawerProjects', JSON.stringify(AppState.savedProjects));
-    renderProjectsList();
-    
-    showSuccess('پروژه با موفقیت حذف شد');
-}
-
-function resetForm() {
-    // Reset to default values
-    domElements.cabinetWidth.value = 80.0;
-    domElements.cabinetHeight.value = 120.0;
-    domElements.cabinetDepth.value = 55.0;
-    domElements.shelfCount.value = 2;
-    document.getElementById('wallCabinet').checked = true;
-    domElements.craftsmanName.value = '';
-    domElements.clientName.value = '';
-    setTodayDate();
-    
-    // Clear highlights
-    removeHighlight(domElements.cabinetWidth);
-    removeHighlight(domElements.cabinetHeight);
-    removeHighlight(domElements.cabinetDepth);
-    removeHighlight(domElements.shelfCount);
-    
-    showSuccess('فرم با موفقیت بازنشانی شد');
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
 }
 
 // Export Functions
 function printTable() {
     if (AppState.cabinets.length === 0) {
-        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
+        showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
     
-    // Create a print-friendly version
+    // Create print window
     const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+    
+    // Get table data
+    let tableHTML = `
         <!DOCTYPE html>
         <html dir="rtl" lang="fa">
         <head>
@@ -830,37 +1172,43 @@ function printTable() {
                 body {
                     padding: 20px;
                     color: #000;
-                    line-height: 1.6;
+                    line-height: 1.4;
                 }
                 
                 .print-header {
                     text-align: center;
                     margin-bottom: 30px;
-                    border-bottom: 3px solid #333;
                     padding-bottom: 20px;
+                    border-bottom: 3px solid #333;
                 }
                 
                 .print-header h1 {
                     color: #2c3e50;
-                    font-size: 24px;
+                    font-size: 28px;
                     margin-bottom: 10px;
                 }
                 
-                .print-metadata {
+                .print-header .subtitle {
+                    color: #666;
+                    font-size: 16px;
+                }
+                
+                .print-meta {
                     display: flex;
                     justify-content: space-between;
-                    margin-bottom: 20px;
+                    margin: 20px 0;
                     padding: 15px;
                     background: #f5f5f5;
                     border-radius: 8px;
+                    flex-wrap: wrap;
                 }
                 
-                .metadata-item {
-                    display: flex;
-                    gap: 10px;
+                .meta-item {
+                    margin: 5px 15px;
+                    font-size: 14px;
                 }
                 
-                .metadata-label {
+                .meta-label {
                     font-weight: bold;
                     color: #2c3e50;
                 }
@@ -872,87 +1220,79 @@ function printTable() {
                     font-size: 12px;
                 }
                 
-                th, td {
-                    border: 1px solid #333;
-                    padding: 10px;
+                th {
+                    background: #333;
+                    color: white;
+                    font-weight: bold;
+                    padding: 12px 8px;
+                    border: 2px solid #000;
+                    text-align: center;
+                }
+                
+                td {
+                    padding: 10px 8px;
+                    border: 1px solid #000;
                     text-align: center;
                     vertical-align: middle;
                 }
                 
-                th {
-                    background-color: #ddd;
+                .cabinet-group {
+                    background: #f0f0f0 !important;
+                }
+                
+                .cabinet-header td {
                     font-weight: bold;
-                    color: #000;
+                    background: #e8f4fc;
                 }
                 
-                tbody tr:nth-child(even) {
-                    background-color: #f9f9f9;
-                }
-                
-                .cabinet-header {
-                    background-color: #e8f4fc !important;
-                    font-weight: bold;
-                }
-                
-                .cabinet-number {
-                    background: #2c3e50;
+                .total-row {
+                    background: #333 !important;
                     color: white;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    display: inline-block;
-                    margin-bottom: 10px;
+                    font-weight: bold;
+                }
+                
+                .total-row td {
+                    border: 2px solid #000;
                 }
                 
                 .print-footer {
                     margin-top: 30px;
                     text-align: center;
                     color: #666;
-                    font-size: 11px;
-                    border-top: 1px solid #ddd;
+                    font-size: 12px;
                     padding-top: 15px;
+                    border-top: 1px solid #ddd;
                 }
                 
                 @media print {
-                    body {
-                        padding: 0;
-                    }
-                    
-                    .no-print {
-                        display: none !important;
-                    }
-                    
-                    table {
-                        page-break-inside: auto;
-                    }
-                    
-                    tr {
-                        page-break-inside: avoid;
-                        page-break-after: auto;
-                    }
+                    body { padding: 0; }
+                    .no-print { display: none; }
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; }
                 }
             </style>
         </head>
         <body>
             <div class="print-header">
                 <h1>جدول ریزاندازه جهت کات مستر</h1>
-                <p>Aqua Drawer LAB - ابزار تخصصی تجزیه باکس کابینت</p>
+                <div class="subtitle">Aqua Drawer LAB - تولید شده توسط نرم‌افزار</div>
             </div>
             
-            <div class="print-metadata">
-                <div class="metadata-item">
-                    <span class="metadata-label">استادکار:</span>
-                    <span>${domElements.resultCraftsman.textContent}</span>
+            <div class="print-meta">
+                <div class="meta-item">
+                    <span class="meta-label">استادکار:</span>
+                    <span>${DOM.resultCraftsman.textContent}</span>
                 </div>
-                <div class="metadata-item">
-                    <span class="metadata-label">مشتری:</span>
-                    <span>${domElements.resultClient.textContent}</span>
+                <div class="meta-item">
+                    <span class="meta-label">مشتری:</span>
+                    <span>${DOM.resultClient.textContent}</span>
                 </div>
-                <div class="metadata-item">
-                    <span class="metadata-label">تاریخ:</span>
-                    <span>${domElements.resultDate.textContent}</span>
+                <div class="meta-item">
+                    <span class="meta-label">تاریخ:</span>
+                    <span>${DOM.resultDate.textContent}</span>
                 </div>
-                <div class="metadata-item">
-                    <span class="metadata-label">تعداد کابینت‌ها:</span>
+                <div class="meta-item">
+                    <span class="meta-label">تعداد کابینت‌ها:</span>
                     <span>${AppState.cabinets.length}</span>
                 </div>
             </div>
@@ -960,109 +1300,124 @@ function printTable() {
             <table>
                 <thead>
                     <tr>
-                        <th rowspan="2">نمای سه‌بعدی</th>
-                        <th rowspan="2">شیار</th>
-                        <th colspan="2">نوار PVC</th>
-                        <th rowspan="2">نوع قطعه / توضیحات</th>
+                        <th rowspan="2">نوع قطعه</th>
                         <th rowspan="2">تعداد</th>
                         <th colspan="2">ابعاد (سانتی‌متر)</th>
-                        <th rowspan="2">شماره پیوست</th>
+                        <th rowspan="2">شیار</th>
+                        <th rowspan="2">نوار PVC</th>
+                        <th rowspan="2">توضیحات</th>
                     </tr>
                     <tr>
                         <th>عرض</th>
-                        <th>طول</th>
-                        <th>عرض</th>
-                        <th>طول</th>
+                        <th>ارتفاع</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${generatePrintTableRows()}
-                </tbody>
-            </table>
-            
-            <div class="print-footer">
-                <p>تولید شده توسط Aqua Drawer LAB - ساخته شده توسط ممد</p>
-                <p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} - ساعت: ${new Date().toLocaleTimeString('fa-IR')}</p>
-            </div>
-            
-            <script>
-                window.onload = function() {
-                    window.print();
-                    setTimeout(function() {
-                        window.close();
-                    }, 1000);
-                };
-            </script>
-        </body>
-        </html>
-    `);
+    `;
     
-    printWindow.document.close();
-}
-
-function generatePrintTableRows() {
-    let rows = '';
-    let cabinetCounts = { wall: 0, floor: 0 };
-    
-    AppState.cabinets.forEach(cabinet => {
-        cabinetCounts[cabinet.type]++;
-        const cabinetNumber = cabinetCounts[cabinet.type];
-        
-        // Add cabinet header row
-        rows += `
-            <tr class="cabinet-header">
-                <td rowspan="${cabinet.parts.length}">
-                    <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
-                    <div>${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر</div>
+    // Add cabinet data
+    let totalParts = 0;
+    AppState.cabinets.forEach((cabinet, index) => {
+        tableHTML += `
+            <tr class="cabinet-group">
+                <td colspan="7" style="text-align: center; font-weight: bold; background: #e0e0e0;">
+                    کابینت ${cabinet.typeName} ${index + 1} - ${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر
                 </td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>${cabinet.parts[0].description}</td>
-                <td>${cabinet.parts[0].quantity}</td>
-                <td>${cabinet.parts[0].width}</td>
-                <td>${cabinet.parts[0].length}</td>
-                <td>-</td>
             </tr>
         `;
         
-        // Add remaining parts rows
-        for (let i = 1; i < cabinet.parts.length; i++) {
-            const part = cabinet.parts[i];
-            rows += `
+        cabinet.parts.forEach(part => {
+            totalParts += part.quantity;
+            tableHTML += `
                 <tr>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
                     <td>${part.description}</td>
                     <td>${part.quantity}</td>
                     <td>${part.width}</td>
-                    <td>${part.length}</td>
-                    <td>-</td>
+                    <td>${part.height}</td>
+                    <td>${part.groove ? '✓' : '✗'}</td>
+                    <td>${getPVCtext(part.pvc)}</td>
+                    <td>${part.notes}</td>
                 </tr>
             `;
-        }
+        });
     });
     
-    return rows;
+    // Add custom rows
+    if (AppState.customRows.length > 0) {
+        tableHTML += `
+            <tr class="cabinet-group">
+                <td colspan="7" style="text-align: center; font-weight: bold; background: #e0e0e0;">
+                    قطعات سفارشی
+                </td>
+            </tr>
+        `;
+        
+        AppState.customRows.forEach(row => {
+            totalParts += row.quantity;
+            tableHTML += `
+                <tr>
+                    <td>${row.description}</td>
+                    <td>${row.quantity}</td>
+                    <td>${row.width}</td>
+                    <td>${row.height}</td>
+                    <td>${row.groove ? '✓' : '✗'}</td>
+                    <td>${getPVCtext(row.pvc)}</td>
+                    <td>${row.notes}</td>
+                </tr>
+            `;
+        });
+    }
+    
+    // Add totals
+    tableHTML += `
+            <tr class="total-row">
+                <td colspan="1">مجموع:</td>
+                <td>${totalParts}</td>
+                <td colspan="5"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="print-footer">
+        <p>Aqua Drawer LAB v2.0 - طراحی و توسعه توسط ممد (By_zZzMohammadzZz)</p>
+        <p>تاریخ چاپ: ${convertToPersianDate(new Date())}</p>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            window.print();
+            setTimeout(() => window.close(), 1000);
+        };
+    </script>
+</body>
+</html>`;
+    
+    printWindow.document.write(tableHTML);
+    printWindow.document.close();
+}
+
+function getPVCtext(pvc) {
+    switch(pvc) {
+        case 'none': return 'ندارد';
+        case 'front': return 'جلو';
+        case 'both': return 'هر دو طرف';
+        default: return 'ندارد';
+    }
 }
 
 async function exportToPDF() {
     if (AppState.cabinets.length === 0) {
-        showError('لطفاً ابتدا حداقل یک کابینت به جدول اضافه کنید');
+        showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
         return;
     }
     
     try {
-        // Show loading state
-        const originalText = domElements.pdfBtn.innerHTML;
-        domElements.pdfBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> در حال تولید PDF...';
-        domElements.pdfBtn.disabled = true;
+        // Show loading
+        const originalText = DOM.pdfBtn.innerHTML;
+        DOM.pdfBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> در حال تولید...';
+        DOM.pdfBtn.disabled = true;
         
-        // Import jsPDF
         const { jsPDF } = window.jspdf;
-        
-        // Create PDF in landscape orientation
         const pdf = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',
@@ -1077,288 +1432,513 @@ async function exportToPDF() {
             creator: 'By_zZzMohammadzZz'
         });
         
-        // Add Persian font (using default font that supports RTL)
-        pdf.setFont('helvetica');
-        
-        // Title
+        // Add logo and title
         pdf.setFontSize(20);
         pdf.text('جدول ریزاندازه جهت کات مستر', 148, 20, { align: 'center' });
         
         pdf.setFontSize(12);
         pdf.text('Aqua Drawer LAB - ابزار تخصصی تجزیه باکس کابینت', 148, 28, { align: 'center' });
         
-        // Metadata
+        // Add metadata
         pdf.setFontSize(10);
-        const metadataY = 40;
-        pdf.text(`استادکار: ${domElements.resultCraftsman.textContent}`, 20, metadataY);
-        pdf.text(`مشتری: ${domElements.resultClient.textContent}`, 148, metadataY, { align: 'center' });
-        pdf.text(`تاریخ: ${domElements.resultDate.textContent}`, 276, metadataY, { align: 'right' });
-        pdf.text(`تعداد کابینت‌ها: ${AppState.cabinets.length}`, 20, metadataY + 8);
+        pdf.text(`استادکار: ${DOM.resultCraftsman.textContent}`, 20, 45);
+        pdf.text(`مشتری: ${DOM.resultClient.textContent}`, 148, 45, { align: 'center' });
+        pdf.text(`تاریخ: ${DOM.resultDate.textContent}`, 276, 45, { align: 'right' });
+        pdf.text(`تعداد کابینت‌ها: ${AppState.cabinets.length}`, 20, 52);
         
-        // Create table data
-        const headers = [
-            ['نمای سه‌بعدی', 'شیار', 'نوار PVC عرض', 'نوار PVC طول', 'نوع قطعه', 'تعداد', 'ابعاد عرض', 'ابعاد طول', 'شماره پیوست']
-        ];
-        
+        // Prepare table data
         const tableData = [];
         
-        // Group cabinets by type for numbering
-        let cabinetCounts = { wall: 0, floor: 0 };
-        
-        AppState.cabinets.forEach(cabinet => {
-            cabinetCounts[cabinet.type]++;
-            const cabinetNumber = cabinetCounts[cabinet.type];
+        // Add cabinets data
+        AppState.cabinets.forEach((cabinet, index) => {
+            // Add cabinet header
+            tableData.push([{
+                content: `کابینت ${cabinet.typeName} ${index + 1} - ${cabinet.width}×${cabinet.height}×${cabinet.depth} سانتی‌متر`,
+                colSpan: 7,
+                styles: { 
+                    fillColor: [200, 200, 200],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    halign: 'center'
+                }
+            }]);
             
-            cabinet.parts.forEach((part, index) => {
-                const rowData = [
-                    index === 0 ? `کابینت ${cabinet.typeName} ${cabinetNumber}\n${cabinet.width}×${cabinet.height}×${cabinet.depth}` : '',
-                    '',
-                    '',
-                    '',
+            // Add cabinet parts
+            cabinet.parts.forEach(part => {
+                tableData.push([
                     part.description,
-                    part.quantity.toString(),
-                    part.width.toString(),
-                    part.length.toString(),
-                    ''
-                ];
-                tableData.push(rowData);
+                    part.quantity,
+                    part.width,
+                    part.height,
+                    part.groove ? '✓' : '✗',
+                    getPVCtext(part.pvc),
+                    part.notes || '-'
+                ]);
             });
         });
         
-        // Configure table options
-        const tableConfig = {
+        // Add custom rows
+        if (AppState.customRows.length > 0) {
+            tableData.push([{
+                content: 'قطعات سفارشی',
+                colSpan: 7,
+                styles: { 
+                    fillColor: [200, 200, 200],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    halign: 'center'
+                }
+            }]);
+            
+            AppState.customRows.forEach(row => {
+                tableData.push([
+                    row.description,
+                    row.quantity,
+                    row.width,
+                    row.height,
+                    row.groove ? '✓' : '✗',
+                    getPVCtext(row.pvc),
+                    row.notes || '-'
+                ]);
+            });
+        }
+        
+        // Generate table
+        pdf.autoTable({
             startY: 60,
-            head: headers,
+            head: [['نوع قطعه', 'تعداد', 'عرض', 'ارتفاع', 'شیار', 'نوار PVC', 'توضیحات']],
             body: tableData,
             theme: 'grid',
             headStyles: {
-                fillColor: [93, 64, 55], // Wood dark color
-                textColor: 255,
+                fillColor: [51, 51, 51],
+                textColor: [255, 255, 255],
                 fontStyle: 'bold',
-                fontSize: 9,
-                halign: 'center',
-                valign: 'middle'
+                halign: 'center'
             },
             bodyStyles: {
-                fontSize: 8,
-                textColor: [44, 62, 80], // Primary color
-                cellPadding: 3,
-                halign: 'center',
-                valign: 'middle'
+                halign: 'center'
             },
             columnStyles: {
-                0: { cellWidth: 25, halign: 'right' }, // 3D View
-                1: { cellWidth: 12 }, // Groove
-                2: { cellWidth: 15 }, // PVC Width
-                3: { cellWidth: 15 }, // PVC Length
-                4: { cellWidth: 30, halign: 'right' }, // Description
-                5: { cellWidth: 12 }, // Quantity
-                6: { cellWidth: 15 }, // Dimensions Width
-                7: { cellWidth: 15 }, // Dimensions Length
-                8: { cellWidth: 20 } // Attachment
+                0: { cellWidth: 40, halign: 'right' },
+                1: { cellWidth: 20 },
+                2: { cellWidth: 25 },
+                3: { cellWidth: 25 },
+                4: { cellWidth: 20 },
+                5: { cellWidth: 30 },
+                6: { cellWidth: 50, halign: 'right' }
             },
-            margin: { left: 10, right: 10 },
+            margin: { left: 15, right: 15 },
             didDrawPage: function(data) {
                 // Footer
                 pdf.setFontSize(8);
                 pdf.setTextColor(128, 128, 128);
-                pdf.text('تولید شده توسط Aqua Drawer LAB - ساخته شده توسط ممد', 148, 200, { align: 'center' });
+                pdf.text('Aqua Drawer LAB v2.0 - طراحی و توسعه توسط ممد (By_zZzMohammadzZz)', 148, 200, { align: 'center' });
                 pdf.text(`صفحه ${pdf.internal.getNumberOfPages()}`, 290, 200, { align: 'right' });
             }
-        };
-        
-        // Generate table
-        pdf.autoTable(tableConfig);
+        });
         
         // Save PDF
-        const fileName = `جدول-ریزاندازه-${new Date().getTime()}.pdf`;
+        const fileName = `کابینت-${new Date().toISOString().slice(0,10)}.pdf`;
         pdf.save(fileName);
         
-        // Restore button state
-        domElements.pdfBtn.innerHTML = originalText;
-        domElements.pdfBtn.disabled = false;
+        // Restore button
+        DOM.pdfBtn.innerHTML = originalText;
+        DOM.pdfBtn.disabled = false;
         
-        showSuccess('PDF با موفقیت تولید و ذخیره شد');
+        showToast('PDF تولید شد', 'فایل با موفقیت ذخیره شد', 'success');
         
     } catch (error) {
-        console.error('PDF export error:', error);
-        showError('خطا در تولید PDF. لطفاً دوباره تلاش کنید.');
+        console.error('PDF Export Error:', error);
+        showToast('خطا در تولید PDF', 'لطفاً دوباره تلاش کنید', 'error');
         
-        // Restore button state
-        domElements.pdfBtn.innerHTML = '<i class="mdi mdi-file-pdf"></i> خروجی PDF';
-        domElements.pdfBtn.disabled = false;
+        // Restore button
+        DOM.pdfBtn.innerHTML = '<i class="mdi mdi-file-pdf"></i> خروجی PDF';
+        DOM.pdfBtn.disabled = false;
     }
 }
 
-// Helper Functions
-function showSuccess(message) {
-    const toast = document.createElement('div');
-    toast.className = 'success-toast';
-    toast.innerHTML = `
-        <i class="mdi mdi-check-circle"></i>
-        <span>${message}</span>
-    `;
+function exportToExcel() {
+    if (AppState.cabinets.length === 0) {
+        showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
+        return;
+    }
     
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #27ae60, #229954);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        z-index: 10000;
-        box-shadow: 0 8px 32px rgba(39, 174, 96, 0.3);
-        animation: slideIn 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    // Create CSV content
+    let csv = 'نوع قطعه,تعداد,عرض (سانتی‌متر),ارتفاع (سانتی‌متر),شیار,نوار PVC,توضیحات\n';
+    
+    // Add cabinets data
+    AppState.cabinets.forEach((cabinet, index) => {
+        csv += `کابینت ${cabinet.typeName} ${index + 1} - ${cabinet.width}×${cabinet.height}×${cabinet.depth} سانتی‌متر,,,,,,\n`;
+        
+        cabinet.parts.forEach(part => {
+            csv += `${part.description},${part.quantity},${part.width},${part.height},${part.groove ? 'دارد' : 'ندارد'},${getPVCtext(part.pvc)},"${part.notes || ''}"\n`;
+        });
+    });
+    
+    // Add custom rows
+    if (AppState.customRows.length > 0) {
+        csv += 'قطعات سفارشی,,,,,,\n';
+        
+        AppState.customRows.forEach(row => {
+            csv += `${row.description},${row.quantity},${row.width},${row.height},${row.groove ? 'دارد' : 'ندارد'},${getPVCtext(row.pvc)},"${row.notes || ''}"\n`;
+        });
+    }
+    
+    // Create and download file
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `کابینت-${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast('Excel تولید شد', 'فایل CSV با موفقیت ذخیره شد', 'success');
+}
+
+// Project Management
+function saveProject() {
+    if (AppState.cabinets.length === 0) {
+        showToast('جدول خالی است', 'لطفاً ابتدا کابینتی به جدول اضافه کنید', 'error');
+        return;
+    }
+    
+    const projectName = prompt('نام پروژه را وارد کنید:', `پروژه ${convertToPersianDate(new Date())}`);
+    
+    if (!projectName) return;
+    
+    const project = {
+        id: Date.now(),
+        name: projectName,
+        cabinets: JSON.parse(JSON.stringify(AppState.cabinets)),
+        customRows: JSON.parse(JSON.stringify(AppState.customRows)),
+        craftsman: DOM.craftsmanName.value || 'تعیین نشده',
+        client: DOM.clientName.value || 'تعیین نشده',
+        date: DOM.projectDate.value || convertToPersianDate(new Date()),
+        timestamp: Date.now(),
+        version: '2.0'
+    };
+    
+    AppState.savedProjects.push(project);
+    localStorage.setItem('aquaDrawerProjects', JSON.stringify(AppState.savedProjects));
+    
+    renderProjectsList();
+    showToast('پروژه ذخیره شد', 'پروژه با موفقیت ذخیره شد', 'success');
+}
+
+function renderProjectsList() {
+    if (AppState.savedProjects.length === 0) {
+        DOM.projectsList.innerHTML = `
+            <div class="empty-state">
+                <i class="mdi mdi-folder-open-outline"></i>
+                <p>هیچ پروژه‌ای ذخیره نشده است</p>
+                <small>پروژه‌های خود را ذخیره کنید تا بعداً بتوانید آنها را بارگذاری کنید</small>
+            </div>
+        `;
+        return;
+    }
+    
+    DOM.projectsList.innerHTML = AppState.savedProjects.map(project => `
+        <div class="project-item" data-id="${project.id}">
+            <div class="project-info">
+                <h4>${project.name}</h4>
+                <div class="project-meta">
+                    <span><i class="mdi mdi-account-hard-hat"></i> ${project.craftsman}</span>
+                    <span><i class="mdi mdi-calendar"></i> ${project.date}</span>
+                    <span><i class="mdi mdi-cube-outline"></i> ${project.cabinets.length} کابینت</span>
+                    <span><i class="mdi mdi-clock"></i> ${new Date(project.timestamp).toLocaleTimeString('fa-IR')}</span>
+                </div>
+            </div>
+            <div class="project-actions">
+                <button class="project-btn load-project" title="بارگذاری">
+                    <i class="mdi mdi-folder-open"></i>
+                </button>
+                <button class="project-btn delete-project" title="حذف">
+                    <i class="mdi mdi-delete"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Add event listeners
+    DOM.projectsList.querySelectorAll('.load-project').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = parseInt(this.closest('.project-item').dataset.id);
+            loadProject(projectId);
+        });
+    });
+    
+    DOM.projectsList.querySelectorAll('.delete-project').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = parseInt(this.closest('.project-item').dataset.id);
+            deleteProject(projectId);
+        });
+    });
+}
+
+function loadProject(projectId) {
+    const project = AppState.savedProjects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    // Clear current data
+    AppState.cabinets = JSON.parse(JSON.stringify(project.cabinets));
+    AppState.customRows = JSON.parse(JSON.stringify(project.customRows || []));
+    
+    // Update form from first cabinet
+    if (project.cabinets.length > 0) {
+        const firstCabinet = project.cabinets[0];
+        const isAerial = firstCabinet.type === 'aerial';
+        
+        // Set cabinet type
+        document.querySelector(`input[name="cabinetType"][value="${firstCabinet.type}"]`).checked = true;
+        updateCabinetTypeUI();
+        
+        // Set dimensions
+        DOM.cabinetWidth.value = firstCabinet.width;
+        DOM.cabinetHeight.value = firstCabinet.height;
+        DOM.cabinetDepth.value = firstCabinet.depth;
+        DOM.shelfCount.value = firstCabinet.shelves;
+        
+        // Set metadata
+        DOM.craftsmanName.value = project.craftsman;
+        DOM.clientName.value = project.client;
+        DOM.projectDate.value = project.date;
+    }
+    
+    // Update UI
+    updateResultsDisplay();
+    renderTable();
+    
+    showToast('پروژه بارگذاری شد', 'پروژه با موفقیت بارگذاری شد', 'success');
+}
+
+function deleteProject(projectId) {
+    if (!confirm('آیا از حذف این پروژه اطمینان دارید؟ این عمل قابل بازگشت نیست.')) {
+        return;
+    }
+    
+    AppState.savedProjects = AppState.savedProjects.filter(p => p.id !== projectId);
+    localStorage.setItem('aquaDrawerProjects', JSON.stringify(AppState.savedProjects));
+    
+    renderProjectsList();
+    showToast('پروژه حذف شد', 'پروژه با موفقیت حذف شد', 'success');
+}
+
+// Scroll Handling for Header Auto-hide
+function handleScroll() {
+    if (window.innerWidth > 768) return; // Only on mobile
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (scrollTop > AppState.lastScrollTop && scrollTop > 100) {
+        // Scrolling down - hide header
+        if (AppState.headerVisible) {
+            DOM.mainHeader.classList.add('header-hidden');
+            DOM.mainHeader.classList.remove('header-visible');
+            AppState.headerVisible = false;
+        }
+    } else {
+        // Scrolling up - show header
+        if (!AppState.headerVisible) {
+            DOM.mainHeader.classList.remove('header-hidden');
+            DOM.mainHeader.classList.add('header-visible');
+            AppState.headerVisible = true;
+        }
+    }
+    
+    AppState.lastScrollTop = scrollTop;
+    
+    // Update scroll top button
+    updateScrollTopButton();
+}
+
+function updateScrollTopButton() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (scrollTop > 300) {
+        DOM.scrollTopBtn.classList.add('visible');
+    } else {
+        DOM.scrollTopBtn.classList.remove('visible');
+    }
+    
+    // Add click event
+    DOM.scrollTopBtn.onclick = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+}
+
+// Keyboard Shortcuts
+function handleKeyboardShortcuts(e) {
+    // Ctrl/Cmd + Enter: Calculate
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        calculateAndShow();
+    }
+    
+    // Ctrl/Cmd + S: Save project
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveProject();
+    }
+    
+    // Ctrl/Cmd + P: Print
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        printTable();
+    }
+    
+    // Escape: Close sidebar and modals
+    if (e.key === 'Escape') {
+        closeSidebar();
+        hide3DPreview();
+    }
+}
+
+// Auto-save Form Values
+function setupAutoSave() {
+    const inputs = [
+        DOM.cabinetWidth,
+        DOM.cabinetHeight,
+        DOM.cabinetDepth,
+        DOM.shelfCount,
+        DOM.craftsmanName,
+        DOM.clientName
+    ];
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            saveFormValues();
+        });
+    });
+}
+
+function saveFormValues() {
+    const formData = {
+        width: DOM.cabinetWidth.value,
+        height: DOM.cabinetHeight.value,
+        depth: DOM.cabinetDepth.value,
+        shelves: DOM.shelfCount.value,
+        craftsman: DOM.craftsmanName.value,
+        client: DOM.clientName.value,
+        cabinetType: document.querySelector('input[name="cabinetType"]:checked').value
+    };
+    
+    localStorage.setItem('aquaDrawerLastValues', JSON.stringify(formData));
+}
+
+function loadLastValues() {
+    const saved = localStorage.getItem('aquaDrawerLastValues');
+    if (saved) {
+        try {
+            const formData = JSON.parse(saved);
+            
+            // Set cabinet type first
+            document.querySelector(`input[name="cabinetType"][value="${formData.cabinetType}"]`).checked = true;
+            updateCabinetTypeUI();
+            
+            // Set other values
+            DOM.cabinetWidth.value = formData.width || '';
+            DOM.cabinetHeight.value = formData.height || '';
+            DOM.cabinetDepth.value = formData.depth || '';
+            DOM.shelfCount.value = formData.shelves || '2';
+            DOM.craftsmanName.value = formData.craftsman || '';
+            DOM.clientName.value = formData.client || '';
+        } catch (e) {
+            console.error('Error loading last values:', e);
+        }
+    }
+}
+
+// Window Resize Handler
+function handleResize() {
+    // Close sidebar on desktop
+    if (window.innerWidth > 768 && AppState.isSidebarOpen) {
+        closeSidebar();
+    }
+    
+    // Update header visibility
+    if (window.innerWidth > 768) {
+        DOM.mainHeader.classList.remove('header-hidden', 'header-visible');
+        AppState.headerVisible = true;
+    }
+}
+
+// Update Formulas Display
+function updateFormulasDisplay() {
+    const isAerial = document.querySelector('input[name="cabinetType"]:checked').value === 'aerial';
+    
+    if (isAerial) {
+        DOM.aerialFormulas.style.display = 'block';
+        DOM.groundFormulas.style.display = 'none';
+    } else {
+        DOM.aerialFormulas.style.display = 'none';
+        DOM.groundFormulas.style.display = 'block';
+    }
+}
+
+// Toast Notifications
+function showToast(title, message, type = 'info') {
+    // Clear existing timeout
+    if (AppState.toastTimeout) {
+        clearTimeout(AppState.toastTimeout);
+    }
+    
+    // Remove existing toasts
+    document.querySelectorAll('.toast').forEach(toast => toast.remove());
+    
+    // Create toast
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: 'mdi-check-circle',
+        error: 'mdi-alert-circle',
+        info: 'mdi-information'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="mdi ${icons[type]}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">
+            <i class="mdi mdi-close"></i>
+        </button>
     `;
     
     document.body.appendChild(toast);
     
+    // Show toast
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                document.body.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
+        toast.classList.add('show');
+    }, 10);
+    
+    // Close button
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        hideToast(toast);
+    });
+    
+    // Auto hide
+    AppState.toastTimeout = setTimeout(() => {
+        hideToast(toast);
+    }, 5000);
 }
 
-// Event Listeners Setup
-function setupEventListeners() {
-    // Theme toggle
-    domElements.themeToggle.addEventListener('click', toggleTheme);
-    
-    // Sidebar toggle
-    domElements.menuToggle.addEventListener('click', () => {
-        AppState.isSidebarOpen = true;
-        domElements.sidebar.classList.add('active');
-    });
-    
-    domElements.closeSidebar.addEventListener('click', () => {
-        AppState.isSidebarOpen = false;
-        domElements.sidebar.classList.remove('active');
-    });
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (event) => {
-        if (AppState.isSidebarOpen && 
-            !domElements.sidebar.contains(event.target) && 
-            !domElements.menuToggle.contains(event.target)) {
-            AppState.isSidebarOpen = false;
-            domElements.sidebar.classList.remove('active');
+function hideToast(toast) {
+    toast.classList.remove('show');
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
         }
-    });
-    
-    // Sidebar links
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.addEventListener('click', () => {
-            AppState.isSidebarOpen = false;
-            domElements.sidebar.classList.remove('active');
-        });
-    });
-    
-    // Form actions
-    domElements.calculateBtn.addEventListener('click', generateCabinetTable);
-    domElements.addToTableBtn.addEventListener('click', addToTable);
-    domElements.resetBtn.addEventListener('click', resetForm);
-    domElements.clearTableBtn.addEventListener('click', clearTable);
-    domElements.printBtn.addEventListener('click', printTable);
-    domElements.pdfBtn.addEventListener('click', exportToPDF);
-    domElements.saveProjectBtn.addEventListener('click', saveProject);
-    
-    // Update form validation on input
-    const formInputs = [
-        domElements.cabinetWidth,
-        domElements.cabinetHeight,
-        domElements.cabinetDepth,
-        domElements.shelfCount
-    ];
-    
-    formInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            // Remove error highlight when user starts typing
-            removeHighlight(this);
-        });
-    });
-    
-    // Real-time cabinet type change
-    domElements.cabinetType.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const isWallCabinet = this.value === 'wall';
-            const shelfInput = domElements.shelfCount;
-            
-            // Update hint based on cabinet type
-            if (!isWallCabinet) {
-                // Floor cabinet - max 1 shelf
-                if (parseInt(shelfInput.value) > 1) {
-                    shelfInput.value = 1;
-                }
-                shelfInput.max = 1;
-                shelfInput.parentElement.querySelector('.hint').textContent = '(فقط ۰ یا ۱ طبقه برای کابینت زمینی)';
-            } else {
-                // Wall cabinet - up to 20 shelves
-                shelfInput.max = 20;
-                shelfInput.parentElement.querySelector('.hint').textContent = '(۰ تا ۲۰ طبقه)';
-            }
-        });
-    });
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + Enter to calculate
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            generateCabinetTable();
-        }
-        
-        // Ctrl/Cmd + A to add to table
-        if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-            e.preventDefault();
-            addToTable();
-        }
-        
-        // Escape to close sidebar
-        if (e.key === 'Escape' && AppState.isSidebarOpen) {
-            AppState.isSidebarOpen = false;
-            domElements.sidebar.classList.remove('active');
-        }
-    });
-    
-    // Prevent form submission on Enter key in inputs
-    document.querySelectorAll('input[type="number"], input[type="text"]').forEach(input => {
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                // Focus on next input or calculate
-                const form = input.closest('form') || input.closest('.form-grid');
-                const inputs = form ? Array.from(form.querySelectorAll('input')) : [];
-                const currentIndex = inputs.indexOf(input);
-                
-                if (currentIndex < inputs.length - 1) {
-                    inputs[currentIndex + 1].focus();
-                } else {
-                    generateCabinetTable();
-                }
-            }
-        });
-    });
-    
-    // Auto-update date when it's empty
-    domElements.projectDate.addEventListener('focus', function() {
-        if (!this.value.trim()) {
-            this.value = convertToPersianDate(new Date());
-        }
-    });
-    
-    console.log('All event listeners set up successfully');
+    }, 300);
 }
 
-// Initialize the app when DOM is loaded
+// Initialize the application
 document.addEventListener('DOMContentLoaded', init);
