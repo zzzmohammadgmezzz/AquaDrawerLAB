@@ -1,41 +1,43 @@
-/* CSS Variables for Theming - Professional Woodworking Theme */
+/* CSS Variables for Theming - Professional Woodworking Theme with Blue/Navy Accents */
 :root {
-    /* Light Theme - Professional Woodworking Palette */
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --info-color: #2980b9;
+    /* Light Theme - Professional Woodworking Palette with Navy Blue */
+    --primary-color: #1e3a5f;
+    --secondary-color: #2c5282;
+    --accent-color: #c53030;
+    --success-color: #276749;
+    --warning-color: #d69e2e;
+    --info-color: #2b6cb0;
+    --navy-color: #1e3a5f;
+    --blue-accent: #4299e1;
     
-    /* Wood Inspired Colors */
-    --wood-light: #f5e6d3;
-    --wood-medium: #c19a6b;
-    --wood-dark: #8b4513;
-    --wood-accent: #d2691e;
+    /* Wood Inspired Colors with Blue Tones */
+    --wood-light: #f7f3e9;
+    --wood-medium: #b8a07e;
+    --wood-dark: #6b4c3a;
+    --wood-accent: #c17d3a;
     
-    /* Metal/Industrial Colors */
-    --metal-light: #bdc3c7;
-    --metal-medium: #7f8c8d;
-    --metal-dark: #34495e;
+    /* Metal/Industrial Colors with Blue Tints */
+    --metal-light: #cbd5e0;
+    --metal-medium: #718096;
+    --metal-dark: #2d3748;
     
-    /* Background & Surface */
-    --background-color: #f8f9fa;
+    /* Background & Surface with Blue Undertones */
+    --background-color: #f8fafc;
     --surface-color: #ffffff;
-    --surface-alt: #f1f3f4;
-    --text-color: #2c3e50;
-    --text-secondary: #7f8c8d;
-    --text-muted: #95a5a6;
-    --border-color: #dfe6e9;
-    --border-light: #ecf0f1;
+    --surface-alt: #f1f5f9;
+    --text-color: #2d3748;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --border-color: #e2e8f0;
+    --border-light: #edf2f7;
     
     /* Shadows - Enhanced Depth */
-    --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.18);
-    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.2);
+    --shadow-xs: 0 1px 3px rgba(30, 58, 95, 0.05);
+    --shadow-sm: 0 2px 8px rgba(30, 58, 95, 0.08);
+    --shadow-md: 0 4px 16px rgba(30, 58, 95, 0.12);
+    --shadow-lg: 0 8px 32px rgba(30, 58, 95, 0.15);
+    --shadow-xl: 0 12px 48px rgba(30, 58, 95, 0.18);
+    --shadow-hover: 0 12px 40px rgba(30, 58, 95, 0.2);
     
     /* Spacing System */
     --spacing-xs: 0.5rem;
@@ -78,32 +80,34 @@
     --z-toast: 1080;
 }
 
-/* Dark Theme Variables */
+/* Dark Theme Variables with Navy Blue */
 [data-theme="dark"] {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --info-color: #2980b9;
+    --primary-color: #4299e1;
+    --secondary-color: #2b6cb0;
+    --accent-color: #fc8181;
+    --success-color: #68d391;
+    --warning-color: #f6e05e;
+    --info-color: #63b3ed;
+    --navy-color: #2d3748;
+    --blue-accent: #90cdf4;
     
-    --wood-light: #3e2c1c;
-    --wood-medium: #5d4037;
-    --wood-dark: #3e2723;
-    --wood-accent: #d2691e;
+    --wood-light: #2d2520;
+    --wood-medium: #4a3c32;
+    --wood-dark: #362a23;
+    --wood-accent: #d69e2e;
     
-    --metal-light: #546e7a;
-    --metal-medium: #37474f;
-    --metal-dark: #263238;
+    --metal-light: #4a5568;
+    --metal-medium: #2d3748;
+    --metal-dark: #1a202c;
     
-    --background-color: #1a1a2e;
-    --surface-color: #16213e;
-    --surface-alt: #0f3460;
-    --text-color: #ecf0f1;
-    --text-secondary: #bdc3c7;
-    --text-muted: #95a5a6;
-    --border-color: #2c3e50;
-    --border-light: #34495e;
+    --background-color: #1a202c;
+    --surface-color: #2d3748;
+    --surface-alt: #4a5568;
+    --text-color: #edf2f7;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    --border-color: #4a5568;
+    --border-light: #718096;
     
     --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -157,7 +161,7 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
     font-size: var(--font-xxxl);
     color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--primary-color), var(--navy-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -177,7 +181,7 @@ h2:after {
     right: 0;
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, var(--accent-color), var(--wood-accent));
+    background: linear-gradient(90deg, var(--accent-color), var(--blue-accent));
     border-radius: 2px;
 }
 
@@ -197,7 +201,7 @@ p {
 }
 
 a {
-    color: var(--secondary-color);
+    color: var(--blue-accent);
     text-decoration: none;
     transition: all var(--transition-fast);
     position: relative;
@@ -209,7 +213,7 @@ a:hover {
 
 /* Enhanced Header with Auto-hide on Mobile */
 .main-header {
-    background-color: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     box-shadow: var(--shadow-md);
     padding: var(--spacing-sm) 0;
     position: fixed;
@@ -217,10 +221,12 @@ a:hover {
     left: 0;
     right: 0;
     z-index: var(--z-fixed);
-    border-bottom: 3px solid var(--wood-accent);
+    border-bottom: 3px solid var(--blue-accent);
     backdrop-filter: blur(10px);
     background-color: rgba(var(--surface-color), 0.95);
-    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    transition: transform var(--transition-slow), opacity var(--transition-slow), background-color var(--transition-normal);
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .main-header.header-hidden {
@@ -251,7 +257,7 @@ a:hover {
 
 .menu-toggle {
     display: none;
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     border: none;
     color: white;
     width: 48px;
@@ -279,8 +285,8 @@ a:hover {
 
 .logo i {
     font-size: var(--font-xxxl);
-    color: var(--wood-accent);
-    background: linear-gradient(135deg, var(--wood-accent), var(--accent-color));
+    color: var(--blue-accent);
+    background: linear-gradient(135deg, var(--blue-accent), var(--primary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -294,7 +300,7 @@ a:hover {
 .logo-text h1 {
     font-size: var(--font-lg);
     margin: 0;
-    background: linear-gradient(135deg, var(--primary-color), var(--wood-dark));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -318,7 +324,7 @@ a:hover {
 }
 
 .theme-toggle {
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     border: none;
     color: white;
     width: 48px;
@@ -363,10 +369,10 @@ a:hover {
     font-size: var(--font-sm);
     color: var(--text-secondary);
     font-weight: 500;
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.1), rgba(var(--navy-color-rgb), 0.1));
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-sm);
-    border-right: 3px solid var(--wood-accent);
+    border-right: 3px solid var(--blue-accent);
 }
 
 /* Enhanced Sidebar */
@@ -376,7 +382,7 @@ a:hover {
     right: -320px;
     width: 300px;
     height: 100%;
-    background-color: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     box-shadow: var(--shadow-xl);
     z-index: var(--z-modal);
     transition: right var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
@@ -397,7 +403,7 @@ a:hover {
     align-items: center;
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);
-    background: linear-gradient(135deg, var(--wood-light), var(--wood-medium));
+    background: linear-gradient(135deg, var(--navy-color), var(--blue-accent));
 }
 
 .sidebar-header h3 {
@@ -466,13 +472,13 @@ a:hover {
     border-radius: var(--radius-md);
     transition: all var(--transition-normal);
     border: 2px solid transparent;
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, rgba(var(--surface-color), 0.8), rgba(var(--surface-alt), 0.8));
 }
 
 .sidebar-link:hover {
-    background: linear-gradient(135deg, rgba(var(--secondary-color-rgb), 0.1), rgba(var(--wood-accent-rgb), 0.1));
-    color: var(--secondary-color);
-    border-color: rgba(var(--secondary-color-rgb), 0.2);
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.15), rgba(var(--navy-color-rgb), 0.1));
+    color: var(--blue-accent);
+    border-color: rgba(var(--blue-accent-rgb), 0.3);
     transform: translateX(-5px);
     box-shadow: var(--shadow-sm);
 }
@@ -498,7 +504,7 @@ a:hover {
 .sidebar-footer {
     padding: var(--spacing-lg);
     border-top: 1px solid var(--border-color);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, rgba(var(--surface-color), 0.8), rgba(var(--surface-alt), 0.8));
 }
 
 .github-link a {
@@ -506,7 +512,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, var(--primary-color), var(--metal-dark));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
     color: white;
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);
@@ -525,7 +531,7 @@ a:hover {
     color: var(--text-secondary);
     font-size: var(--font-sm);
     padding: var(--spacing-md);
-    background: rgba(var(--wood-light-rgb), 0.1);
+    background: rgba(var(--blue-accent-rgb), 0.1);
     border-radius: var(--radius-md);
 }
 
@@ -563,7 +569,7 @@ a:hover {
 
 /* Enhanced Cards */
 .card {
-    background-color: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     margin-bottom: var(--spacing-xl);
@@ -587,12 +593,12 @@ a:hover {
     right: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--wood-accent), var(--accent-color));
+    background: linear-gradient(90deg, var(--blue-accent), var(--accent-color));
 }
 
 .card-header {
     padding: var(--spacing-xl) var(--spacing-xxl);
-    background: linear-gradient(135deg, var(--wood-light), var(--wood-medium));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -651,7 +657,7 @@ a:hover {
 }
 
 .form-group label i {
-    color: var(--wood-accent);
+    color: var(--blue-accent);
     font-size: var(--font-lg);
 }
 
@@ -661,15 +667,15 @@ a:hover {
     border-radius: var(--radius-md);
     overflow: hidden;
     transition: all var(--transition-normal);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     height: 56px;
     width: 100%;
     box-sizing: border-box;
 }
 
 .input-with-unit:focus-within {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+    border-color: var(--blue-accent);
+    box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.2);
     transform: translateY(-2px);
 }
 
@@ -693,7 +699,7 @@ a:hover {
 
 .unit {
     padding: 0 var(--spacing-xl);
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--navy-color), var(--blue-accent));
     color: white;
     font-weight: 700;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -713,7 +719,7 @@ a:hover {
     border-radius: var(--radius-md);
     font-family: 'Vazirmatn', sans-serif;
     font-size: var(--font-md);
-    background-color: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     color: var(--text-color);
     transition: all var(--transition-normal);
     font-weight: 500;
@@ -723,8 +729,8 @@ a:hover {
 
 .form-group input[type="text"]:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+    border-color: var(--blue-accent);
+    box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.2);
 }
 
 .hint {
@@ -752,7 +758,7 @@ a:hover {
     border: 2px solid var(--border-color);
     cursor: pointer;
     transition: all var(--transition-normal);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
@@ -771,7 +777,7 @@ a:hover {
 }
 
 .type-option:hover {
-    border-color: var(--secondary-color);
+    border-color: var(--blue-accent);
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
@@ -796,8 +802,8 @@ a:hover {
 }
 
 .type-option input[type="radio"]:checked + .radio-custom {
-    border-color: var(--secondary-color);
-    background: var(--secondary-color);
+    border-color: var(--blue-accent);
+    background: var(--blue-accent);
 }
 
 .type-option input[type="radio"]:checked + .radio-custom::after {
@@ -814,13 +820,13 @@ a:hover {
 
 .type-icon {
     font-size: var(--font-xxl);
-    color: var(--wood-accent);
+    color: var(--blue-accent);
     width: 60px;
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.2), rgba(var(--wood-accent-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.1), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-md);
     flex-shrink: 0;
 }
@@ -845,16 +851,16 @@ a:hover {
 }
 
 .type-option input[type="radio"]:checked ~ .type-icon {
-    background: linear-gradient(135deg, var(--secondary-color), var(--info-color));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
 }
 
 .type-option input[type="radio"]:checked ~ .type-info .type-title {
-    color: var(--secondary-color);
+    color: var(--blue-accent);
 }
 
 .type-option input[type="radio"]:checked ~ .type-info .type-subtitle {
-    color: var(--secondary-color);
+    color: var(--blue-accent);
 }
 
 /* Quick Actions */
@@ -863,7 +869,7 @@ a:hover {
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-lg);
     border: 2px solid var(--border-color);
     width: 100%;
@@ -875,7 +881,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-color);
@@ -890,9 +896,9 @@ a:hover {
 }
 
 .quick-btn:hover {
-    background: linear-gradient(135deg, var(--wood-light), var(--wood-medium));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
-    border-color: var(--wood-medium);
+    border-color: var(--blue-accent);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
@@ -957,13 +963,13 @@ a:hover {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
     box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #2980b9, var(--secondary-color));
+    background: linear-gradient(135deg, var(--navy-color), var(--blue-accent));
     transform: translateY(-3px);
     box-shadow: var(--shadow-hover);
 }
@@ -981,37 +987,37 @@ a:hover {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, var(--success-color), #229954);
+    background: linear-gradient(135deg, var(--success-color), #22543d);
     color: white;
     box-shadow: var(--shadow-md);
 }
 
 .btn-success:hover {
-    background: linear-gradient(135deg, #229954, var(--success-color));
+    background: linear-gradient(135deg, #22543d, var(--success-color));
     transform: translateY(-3px);
     box-shadow: var(--shadow-hover);
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, var(--accent-color), #c0392b);
+    background: linear-gradient(135deg, var(--accent-color), #9b2c2c);
     color: white;
     box-shadow: var(--shadow-md);
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, #c0392b, var(--accent-color));
+    background: linear-gradient(135deg, #9b2c2c, var(--accent-color));
     transform: translateY(-3px);
     box-shadow: var(--shadow-hover);
 }
 
 .btn-export {
-    background: linear-gradient(135deg, var(--accent-color), #d35400);
+    background: linear-gradient(135deg, var(--accent-color), var(--warning-color));
     color: white;
     box-shadow: var(--shadow-md);
 }
 
 .btn-export:hover {
-    background: linear-gradient(135deg, #d35400, var(--accent-color));
+    background: linear-gradient(135deg, var(--warning-color), var(--accent-color));
     transform: translateY(-3px);
     box-shadow: var(--shadow-hover);
 }
@@ -1049,7 +1055,7 @@ a:hover {
 }
 
 .modal-content {
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     max-width: 800px;
@@ -1066,7 +1072,7 @@ a:hover {
 
 .modal-header {
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, var(--wood-light), var(--wood-medium));
+    background: linear-gradient(135deg, var(--navy-color), var(--blue-accent));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1118,7 +1124,7 @@ a:hover {
 }
 
 .preview-svg {
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     border: 2px solid var(--border-color);
@@ -1139,7 +1145,7 @@ a:hover {
 }
 
 .dimension-display {
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     border: 2px solid var(--border-color);
@@ -1159,7 +1165,7 @@ a:hover {
 
 .dim-value {
     font-weight: 800;
-    color: var(--secondary-color);
+    color: var(--blue-accent);
     font-size: var(--font-xl);
     min-width: 80px;
     text-align: left;
@@ -1190,7 +1196,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-lg);
     border: 2px solid var(--border-color);
     transition: all var(--transition-normal);
@@ -1199,14 +1205,14 @@ a:hover {
 
 .metadata-item:hover {
     transform: translateX(-5px);
-    border-color: var(--secondary-color);
+    border-color: var(--blue-accent);
     box-shadow: var(--shadow-md);
 }
 
 .metadata-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
@@ -1241,7 +1247,7 @@ a:hover {
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-lg);
     border: 2px solid var(--border-color);
     flex-wrap: wrap;
@@ -1262,7 +1268,7 @@ a:hover {
     padding: var(--spacing-md) var(--spacing-xl) var(--spacing-md) calc(var(--spacing-xl) + 30px);
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     color: var(--text-color);
     font-family: 'Vazirmatn', sans-serif;
     font-size: var(--font-md);
@@ -1272,8 +1278,8 @@ a:hover {
 
 .table-search input:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+    border-color: var(--blue-accent);
+    box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.2);
 }
 
 .table-search i {
@@ -1292,7 +1298,7 @@ a:hover {
     border: 2px solid var(--border-color);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     position: relative;
     width: 100%;
     box-sizing: border-box;
@@ -1306,7 +1312,7 @@ a:hover {
 }
 
 .results-table thead {
-    background: linear-gradient(135deg, var(--wood-dark), var(--metal-dark));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
     position: sticky;
     top: 0;
     z-index: 10;
@@ -1331,7 +1337,7 @@ a:hover {
     right: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, var(--accent-color), var(--wood-accent));
+    background: linear-gradient(90deg, var(--blue-accent), var(--accent-color));
 }
 
 .results-table td {
@@ -1349,30 +1355,30 @@ a:hover {
 }
 
 .results-table tbody tr:nth-child(even) {
-    background-color: rgba(var(--wood-light-rgb), 0.05);
+    background-color: rgba(var(--blue-accent-rgb), 0.03);
 }
 
 .results-table tbody tr:hover {
-    background-color: rgba(var(--secondary-color-rgb), 0.1);
+    background-color: rgba(var(--blue-accent-rgb), 0.1);
     transform: scale(1.002);
     box-shadow: var(--shadow-sm);
 }
 
 /* 3D View Column */
 .col-3d {
-    min-width: 200px;
+    min-width: 220px;
 }
 
 .cabinet-3d-cell {
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     position: relative;
-    min-width: 200px;
+    min-width: 220px;
 }
 
 .cabinet-number {
     display: inline-block;
-    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--accent-color), var(--blue-accent));
     color: white;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-sm);
@@ -1383,11 +1389,43 @@ a:hover {
     letter-spacing: 1px;
 }
 
+/* Cabinet Actions */
+.cabinet-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    justify-content: center;
+}
+
+.delete-cabinet-btn {
+    background: linear-gradient(135deg, var(--accent-color), #9b2c2c);
+    color: white;
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: var(--font-xs);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-weight: 600;
+    width: 100%;
+    justify-content: center;
+}
+
+.delete-cabinet-btn:hover {
+    background: linear-gradient(135deg, #9b2c2c, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
 /* Enhanced 3D Schematic */
 .cabinet-schematic {
     width: 100%;
     height: 150px;
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -1405,7 +1443,7 @@ a:hover {
     color: var(--text-secondary);
     text-align: center;
     padding: var(--spacing-xs);
-    background: rgba(var(--wood-light-rgb), 0.1);
+    background: rgba(var(--blue-accent-rgb), 0.1);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
 }
@@ -1415,7 +1453,7 @@ a:hover {
     width: 24px;
     height: 24px;
     cursor: pointer;
-    accent-color: var(--secondary-color);
+    accent-color: var(--blue-accent);
     transform: scale(1.2);
     transition: all var(--transition-fast);
     border-radius: var(--radius-sm);
@@ -1423,7 +1461,7 @@ a:hover {
 
 .groove-checkbox:hover, .pvc-checkbox:hover {
     transform: scale(1.4);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
 .attachment-input {
@@ -1434,7 +1472,7 @@ a:hover {
     text-align: center;
     font-family: 'Vazirmatn', sans-serif;
     font-size: var(--font-sm);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     color: var(--text-color);
     transition: all var(--transition-fast);
     font-weight: 600;
@@ -1443,8 +1481,8 @@ a:hover {
 
 .attachment-input:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    border-color: var(--blue-accent);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
 /* Actions Column */
@@ -1463,7 +1501,7 @@ a:hover {
     height: 36px;
     border: none;
     border-radius: var(--radius-md);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     color: var(--text-color);
     cursor: pointer;
     display: flex;
@@ -1479,12 +1517,12 @@ a:hover {
 }
 
 .action-btn.edit {
-    background: rgba(52, 152, 219, 0.1);
-    color: var(--secondary-color);
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.1), rgba(30, 58, 95, 0.05));
+    color: var(--blue-accent);
 }
 
 .action-btn.delete {
-    background: rgba(231, 76, 60, 0.1);
+    background: linear-gradient(135deg, rgba(197, 48, 48, 0.1), rgba(155, 44, 44, 0.05));
     color: var(--accent-color);
 }
 
@@ -1494,7 +1532,7 @@ a:hover {
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-lg);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-top: 2px solid var(--border-color);
     width: 100%;
     box-sizing: border-box;
@@ -1505,7 +1543,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-md);
     border: 2px solid var(--border-color);
     box-sizing: border-box;
@@ -1519,7 +1557,7 @@ a:hover {
 
 .summary-value {
     font-weight: 800;
-    color: var(--secondary-color);
+    color: var(--blue-accent);
     font-size: var(--font-lg);
 }
 
@@ -1532,7 +1570,7 @@ a:hover {
 .empty-table-message td {
     padding: var(--spacing-xxxl) !important;
     text-align: center;
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.05), rgba(var(--metal-light-rgb), 0.05);
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.02), rgba(var(--navy-color-rgb), 0.02));
 }
 
 .empty-state {
@@ -1568,7 +1606,7 @@ a:hover {
 /* Enhanced Export Actions */
 .export-actions {
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-xl);
     border: 2px solid var(--border-color);
     margin-top: var(--spacing-xl);
@@ -1613,7 +1651,7 @@ a:hover {
     border-radius: var(--radius-xl);
     margin-bottom: var(--spacing-sm);
     transition: all var(--transition-normal);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     position: relative;
     overflow: hidden;
     width: 100%;
@@ -1627,13 +1665,13 @@ a:hover {
     top: 0;
     bottom: 0;
     width: 5px;
-    background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
+    background: linear-gradient(180deg, var(--blue-accent), var(--navy-color));
 }
 
 .project-item:hover {
     transform: translateX(-10px);
     box-shadow: var(--shadow-xl);
-    border-color: var(--secondary-color);
+    border-color: var(--blue-accent);
 }
 
 .project-info h4 {
@@ -1655,7 +1693,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--surface-alt);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
     box-sizing: border-box;
@@ -1682,9 +1720,9 @@ a:hover {
 }
 
 .project-btn:hover {
-    background-color: var(--secondary-color);
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
-    border-color: var(--secondary-color);
+    border-color: var(--blue-accent);
     transform: scale(1.1) rotate(5deg);
 }
 
@@ -1713,7 +1751,7 @@ a:hover {
 .step-number {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
     border-radius: 50%;
     display: flex;
@@ -1740,7 +1778,7 @@ a:hover {
 /* Enhanced Formulas Info */
 .formulas-info {
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-xl);
     border: 2px solid var(--border-color);
     width: 100%;
@@ -1767,7 +1805,7 @@ a:hover {
 
 .formula-card {
     padding: var(--spacing-xl);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-lg);
     border: 2px solid var(--border-color);
     transition: all var(--transition-normal);
@@ -1778,11 +1816,11 @@ a:hover {
 .formula-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-xl);
-    border-color: var(--secondary-color);
+    border-color: var(--blue-accent);
 }
 
 .formula-card h5 {
-    color: var(--secondary-color);
+    color: var(--blue-accent);
     margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-md);
     border-bottom: 2px solid var(--border-color);
@@ -1806,7 +1844,7 @@ a:hover {
 
 .formula-card li:before {
     content: '•';
-    color: var(--wood-accent);
+    color: var(--blue-accent);
     font-size: var(--font-xl);
     line-height: 1;
 }
@@ -1838,7 +1876,7 @@ a:hover {
 .about-logo {
     text-align: center;
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-xl);
     border: 2px solid var(--border-color);
     box-sizing: border-box;
@@ -1846,9 +1884,9 @@ a:hover {
 
 .about-logo i {
     font-size: 6rem;
-    color: var(--wood-accent);
+    color: var(--blue-accent);
     margin-bottom: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--wood-accent), var(--accent-color));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1907,7 +1945,7 @@ a:hover {
     display: flex;
     gap: var(--spacing-xl);
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, rgba(var(--wood-light-rgb), 0.1), rgba(var(--metal-light-rgb), 0.1));
+    background: linear-gradient(135deg, rgba(var(--blue-accent-rgb), 0.05), rgba(var(--navy-color-rgb), 0.05));
     border-radius: var(--radius-xl);
     border: 2px solid var(--border-color);
     align-items: center;
@@ -1918,7 +1956,7 @@ a:hover {
 .developer-avatar {
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1948,7 +1986,7 @@ a:hover {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: linear-gradient(135deg, var(--primary-color), var(--metal-dark));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
     color: white;
     border-radius: var(--radius-md);
     font-weight: 600;
@@ -1967,7 +2005,7 @@ a:hover {
     left: var(--spacing-xl);
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--accent-color), var(--wood-accent));
+    background: linear-gradient(135deg, var(--accent-color), var(--blue-accent));
     color: white;
     border: none;
     border-radius: var(--radius-round);
@@ -1995,8 +2033,8 @@ a:hover {
 
 /* Enhanced Footer */
 .footer {
-    background: linear-gradient(135deg, var(--wood-dark), var(--metal-dark));
-    border-top: 5px solid var(--wood-accent);
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
+    border-top: 5px solid var(--blue-accent);
     padding: var(--spacing-xxl) 0;
     margin-top: var(--spacing-xxxl);
     color: white;
@@ -2049,7 +2087,7 @@ a:hover {
 }
 
 .footer-logo i {
-    color: var(--wood-accent);
+    color: var(--blue-accent);
     font-size: var(--font-xxl);
 }
 
@@ -2123,7 +2161,7 @@ a:hover {
     top: var(--spacing-xl);
     left: var(--spacing-xl);
     right: var(--spacing-xl);
-    background: var(--surface-color);
+    background: linear-gradient(135deg, var(--surface-color), var(--surface-alt));
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg) var(--spacing-xl);
     box-shadow: var(--shadow-xl);
@@ -2148,17 +2186,17 @@ a:hover {
 
 .toast.success {
     border-color: var(--success-color);
-    background: linear-gradient(135deg, rgba(39, 174, 96, 0.1), rgba(34, 153, 84, 0.05));
+    background: linear-gradient(135deg, rgba(39, 103, 73, 0.1), rgba(34, 84, 61, 0.05));
 }
 
 .toast.error {
     border-color: var(--accent-color);
-    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.05));
+    background: linear-gradient(135deg, rgba(197, 48, 48, 0.1), rgba(155, 44, 44, 0.05));
 }
 
 .toast.info {
-    border-color: var(--secondary-color);
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.05));
+    border-color: var(--blue-accent);
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.1), rgba(30, 58, 95, 0.05));
 }
 
 .toast-icon {
@@ -2173,17 +2211,17 @@ a:hover {
 }
 
 .toast.success .toast-icon {
-    background: linear-gradient(135deg, var(--success-color), #229954);
+    background: linear-gradient(135deg, var(--success-color), #22543d);
     color: white;
 }
 
 .toast.error .toast-icon {
-    background: linear-gradient(135deg, var(--accent-color), #c0392b);
+    background: linear-gradient(135deg, var(--accent-color), #9b2c2c);
     color: white;
 }
 
 .toast.info .toast-icon {
-    background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     color: white;
 }
 
@@ -2272,25 +2310,33 @@ a:hover {
 @media (max-width: 768px) {
     .main-header {
         padding: var(--spacing-xs) 0;
-        height: 70px;
+        height: 60px;
     }
     
     .main-content {
-        padding-top: 90px;
+        padding-top: 70px;
     }
     
     .menu-toggle {
         display: flex;
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-md);
     }
     
     .header-content {
         flex-direction: row;
         align-items: center;
         gap: var(--spacing-sm);
+        padding: 0 var(--spacing-md);
     }
     
     .logo-text h1 {
-        font-size: var(--font-md);
+        font-size: var(--font-sm);
+    }
+    
+    .logo-text small {
+        font-size: 0.7rem;
     }
     
     .app-subtitle {
@@ -2299,6 +2345,12 @@ a:hover {
     
     .header-controls {
         gap: var(--spacing-sm);
+    }
+    
+    .theme-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-md);
     }
     
     .form-grid {
@@ -2317,7 +2369,7 @@ a:hover {
         grid-template-columns: 1fr;
     }
     
-    .results-metadata {
+    .metadata-grid {
         grid-template-columns: 1fr;
         gap: var(--spacing-md);
     }
@@ -2328,7 +2380,7 @@ a:hover {
         gap: var(--spacing-md);
     }
     
-    .radio-group {
+    .cabinet-type-selector {
         flex-direction: column;
         gap: var(--spacing-sm);
     }
@@ -2428,7 +2480,8 @@ a:hover {
     .fab,
     .table-controls,
     .row-actions,
-    .toast {
+    .toast,
+    .delete-cabinet-btn {
         display: none !important;
     }
     
@@ -2573,24 +2626,24 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--wood-medium), var(--wood-dark));
+    background: linear-gradient(135deg, var(--blue-accent), var(--navy-color));
     border-radius: var(--radius-md);
     border: 2px solid var(--surface-alt);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--wood-dark), var(--wood-accent));
+    background: linear-gradient(135deg, var(--navy-color), var(--primary-color));
 }
 
 /* Selection Color */
 ::selection {
-    background-color: rgba(52, 152, 219, 0.3);
+    background-color: rgba(66, 153, 225, 0.3);
     color: var(--text-color);
 }
 
 /* Focus Styles */
 :focus {
-    outline: 3px solid rgba(52, 152, 219, 0.5);
+    outline: 3px solid rgba(66, 153, 225, 0.5);
     outline-offset: 2px;
 }
 
@@ -2610,11 +2663,48 @@ a:hover {
 
 /* Pulse Animation for Interactive Elements */
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(66, 153, 225, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0); }
 }
 
 .pulse {
     animation: pulse 2s infinite;
+}
+
+/* Hover animations for cards */
+.card:hover {
+    animation: cardHover 0.3s ease forwards;
+}
+
+@keyframes cardHover {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
+}
+
+/* Button press animation */
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Smooth transitions for all interactive elements */
+a, button, input, select, .card, .sidebar-link, .action-btn, .quick-btn {
+    transition: all var(--transition-normal);
+}
+
+/* Enhanced hover effects */
+.btn:hover, .action-btn:hover, .quick-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Subtle background animations */
+@keyframes subtleBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.card-header, .sidebar-header, .modal-header {
+    background-size: 200% 200%;
+    animation: subtleBackground 10s ease infinite;
 }

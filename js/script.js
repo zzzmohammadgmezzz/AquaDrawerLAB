@@ -395,7 +395,7 @@ function validateStretcherHeight() {
 
 function highlightInvalid(element) {
     element.parentElement.style.borderColor = 'var(--accent-color)';
-    element.parentElement.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.2)';
+    element.parentElement.style.boxShadow = '0 0 0 4px rgba(197, 48, 48, 0.2)';
 }
 
 function removeHighlight(element) {
@@ -608,7 +608,7 @@ function calculateCabinetParts() {
         if (shelves > 0) {
             parts.push({
                 id: `shelf_${Date.now()}`,
-                description: 'طبقه',
+                description: 'طبله',
                 quantity: 1,
                 width: depth - 2,
                 height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
@@ -679,11 +679,13 @@ function generate3DSVG() {
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     
     // Colors based on theme - High contrast for dark mode
-    const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
-    const fillColor = AppState.currentTheme === 'dark' ? '#34495e' : '#f8f9fa';
-    const accentColor = '#e74c3c';
-    const woodColor = AppState.currentTheme === 'dark' ? '#c19a6b' : '#8b4513';
-    const textColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
+    const strokeColor = AppState.currentTheme === 'dark' ? '#edf2f7' : '#2d3748';
+    const fillColor = AppState.currentTheme === 'dark' ? '#2d3748' : '#f8fafc';
+    const accentColor = '#c53030';
+    const woodColor = AppState.currentTheme === 'dark' ? '#b8a07e' : '#6b4c3a';
+    const textColor = AppState.currentTheme === 'dark' ? '#edf2f7' : '#2d3748';
+    const blueColor = AppState.currentTheme === 'dark' ? '#90cdf4' : '#4299e1';
+    const navyColor = AppState.currentTheme === 'dark' ? '#2d3748' : '#1e3a5f';
     
     // Main cabinet rectangle (front view)
     const frontRect = document.createElementNS(svgNS, "rect");
@@ -703,7 +705,7 @@ function generate3DSVG() {
     depthLine1.setAttribute("y1", "50");
     depthLine1.setAttribute("x2", "300");
     depthLine1.setAttribute("y2", "30");
-    depthLine1.setAttribute("stroke", woodColor);
+    depthLine1.setAttribute("stroke", blueColor);
     depthLine1.setAttribute("stroke-width", "2");
     depthLine1.setAttribute("stroke-dasharray", "5,5");
     svg.appendChild(depthLine1);
@@ -713,7 +715,7 @@ function generate3DSVG() {
     depthLine2.setAttribute("y1", "250");
     depthLine2.setAttribute("x2", "300");
     depthLine2.setAttribute("y2", "230");
-    depthLine2.setAttribute("stroke", woodColor);
+    depthLine2.setAttribute("stroke", blueColor);
     depthLine2.setAttribute("stroke-width", "2");
     depthLine2.setAttribute("stroke-dasharray", "5,5");
     svg.appendChild(depthLine2);
@@ -812,12 +814,25 @@ function generate3DSVG() {
     typeText.setAttribute("x", "150");
     typeText.setAttribute("y", "280");
     typeText.setAttribute("text-anchor", "middle");
-    typeText.setAttribute("fill", accentColor);
+    typeText.setAttribute("fill", blueColor);
     typeText.setAttribute("font-size", "16");
     typeText.setAttribute("font-weight", "bold");
     typeText.setAttribute("style", "font-family: 'Vazirmatn', sans-serif;");
     typeText.textContent = isAerial ? "کابینت دیواری (باکس هوایی)" : "کابینت زمینی (باکس زمینی)";
     svg.appendChild(typeText);
+    
+    // Add subtle navy background
+    const bgRect = document.createElementNS(svgNS, "rect");
+    bgRect.setAttribute("x", "40");
+    bgRect.setAttribute("y", "40");
+    bgRect.setAttribute("width", "220");
+    bgRect.setAttribute("height", "220");
+    bgRect.setAttribute("fill", "none");
+    bgRect.setAttribute("stroke", navyColor);
+    bgRect.setAttribute("stroke-width", "1");
+    bgRect.setAttribute("stroke-dasharray", "10,5");
+    bgRect.setAttribute("opacity", "0.3");
+    svg.appendChild(bgRect);
     
     DOM.preview3DSVG.appendChild(svg);
 }
@@ -883,7 +898,7 @@ function createCabinetObject() {
 }
 
 function updateResultsDisplay() {
-    if (AppState.cabinets.length === 0) {
+    if (AppState.cabinets.length === 0 && AppState.customRows.length === 0) {
         DOM.resultCraftsman.textContent = 'تعیین نشده';
         DOM.resultClient.textContent = 'تعیین نشده';
         DOM.resultDate.textContent = '-';
@@ -945,48 +960,56 @@ function renderTable() {
         // Calculate cabinet number
         const cabinetNumber = cabinetIndex + 1;
         
+        tableHTML += `
+            <tr data-cabinet-id="${cabinet.id}" data-part-id="${cabinet.parts[0].id}">
+                <td rowspan="${cabinet.parts.length + 1}" class="cabinet-3d-cell">
+                    <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
+                    <div class="cabinet-schematic" id="schematic-${cabinet.id}"></div>
+                    <div class="cabinet-dimensions">
+                        ${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر
+                    </div>
+                    <div class="cabinet-actions">
+                        <button class="delete-cabinet-btn" data-cabinet-id="${cabinet.id}">
+                            <i class="mdi mdi-delete"></i> حذف کامل باکس
+                        </button>
+                    </div>
+                </td>
+        `;
+        
         cabinet.parts.forEach((part, partIndex) => {
-            const isFirstRow = partIndex === 0;
+            if (partIndex > 0) {
+                tableHTML += `<tr data-cabinet-id="${cabinet.id}" data-part-id="${part.id}">`;
+            }
             
             tableHTML += `
-                <tr data-cabinet-id="${cabinet.id}" data-part-id="${part.id}">
-                    ${isFirstRow ? `
-                        <td rowspan="${cabinet.parts.length}" class="cabinet-3d-cell">
-                            <div class="cabinet-number">کابینت ${cabinet.typeName} ${cabinetNumber}</div>
-                            <div class="cabinet-schematic" id="schematic-${cabinet.id}"></div>
-                            <div class="cabinet-dimensions">
-                                ${cabinet.width} × ${cabinet.height} × ${cabinet.depth} سانتی‌متر
-                            </div>
-                        </td>
-                    ` : ''}
-                    <td>${part.description}</td>
-                    <td>${part.quantity}</td>
-                    <td>${part.width}</td>
-                    <td>${part.height}</td>
-                    <td>
-                        <input type="checkbox" class="groove-checkbox" ${part.groove ? 'checked' : ''}>
-                    </td>
-                    <td>
-                        <select class="pvc-select">
-                            <option value="none" ${part.pvc === 'none' ? 'selected' : ''}>ندارد</option>
-                            <option value="front" ${part.pvc === 'front' ? 'selected' : ''}>جلو</option>
-                            <option value="both" ${part.pvc === 'both' ? 'selected' : ''}>هر دو طرف</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="text" class="attachment-input" value="${part.notes}" placeholder="توضیحات...">
-                    </td>
-                    <td class="col-actions">
-                        <div class="row-actions">
-                            <button class="action-btn edit" title="ویرایش">
-                                <i class="mdi mdi-pencil"></i>
-                            </button>
-                            <button class="action-btn delete" title="حذف">
-                                <i class="mdi mdi-delete"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                <td>${part.description}</td>
+                <td>${part.quantity}</td>
+                <td>${part.width}</td>
+                <td>${part.height}</td>
+                <td>
+                    <input type="checkbox" class="groove-checkbox" ${part.groove ? 'checked' : ''}>
+                </td>
+                <td>
+                    <select class="pvc-select">
+                        <option value="none" ${part.pvc === 'none' ? 'selected' : ''}>ندارد</option>
+                        <option value="front" ${part.pvc === 'front' ? 'selected' : ''}>جلو</option>
+                        <option value="both" ${part.pvc === 'both' ? 'selected' : ''}>هر دو طرف</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="attachment-input" value="${part.notes}" placeholder="توضیحات...">
+                </td>
+                <td class="col-actions">
+                    <div class="row-actions">
+                        <button class="action-btn edit" title="ویرایش">
+                            <i class="mdi mdi-pencil"></i>
+                        </button>
+                        <button class="action-btn delete" title="حذف">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
             `;
         });
     });
@@ -1045,9 +1068,10 @@ function generateTable3DSVG(cabinet) {
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     
     // Colors with high contrast for dark mode
-    const strokeColor = AppState.currentTheme === 'dark' ? '#ecf0f1' : '#2c3e50';
-    const fillColor = AppState.currentTheme === 'dark' ? '#2c3e50' : '#f8f9fa';
-    const accentColor = '#e74c3c';
+    const strokeColor = AppState.currentTheme === 'dark' ? '#edf2f7' : '#2d3748';
+    const fillColor = AppState.currentTheme === 'dark' ? '#2d3748' : '#f8fafc';
+    const accentColor = '#c53030';
+    const blueColor = AppState.currentTheme === 'dark' ? '#90cdf4' : '#4299e1';
     
     // Simplified cabinet representation
     const rect = document.createElementNS(svgNS, "rect");
@@ -1083,7 +1107,7 @@ function generateTable3DSVG(cabinet) {
     depthLine.setAttribute("y1", "25");
     depthLine.setAttribute("x2", "140");
     depthLine.setAttribute("y2", "15");
-    depthLine.setAttribute("stroke", strokeColor);
+    depthLine.setAttribute("stroke", blueColor);
     depthLine.setAttribute("stroke-width", "1.5");
     depthLine.setAttribute("stroke-dasharray", "4,2");
     svg.appendChild(depthLine);
@@ -1092,6 +1116,14 @@ function generateTable3DSVG(cabinet) {
 }
 
 function addTableEventListeners() {
+    // Delete cabinet buttons
+    document.querySelectorAll('.delete-cabinet-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cabinetId = parseInt(this.dataset.cabinetId);
+            deleteCabinet(cabinetId);
+        });
+    });
+    
     // Groove checkboxes
     document.querySelectorAll('.groove-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
@@ -1201,8 +1233,8 @@ function addTableEventListeners() {
         });
     });
     
-    // Delete buttons
-    document.querySelectorAll('.action-btn.delete').forEach(btn => {
+    // Delete buttons (for individual rows)
+    document.querySelectorAll('.action-btn.delete:not(.delete-cabinet-btn)').forEach(btn => {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
             const cabinetId = row.dataset.cabinetId;
@@ -1222,11 +1254,12 @@ function addTableEventListeners() {
                     cabinet.parts = cabinet.parts.filter(p => p.id !== partId);
                     if (cabinet.parts.length === 0) {
                         // Remove entire cabinet if no parts left
-                        AppState.cabinets = AppState.cabinets.filter(c => c.id != cabinetId);
+                        deleteCabinet(cabinetId);
+                    } else {
+                        renderTable();
+                        updateResultsDisplay();
+                        showToast('قطعه حذف شد', 'قطعه با موفقیت حذف شد', 'success');
                     }
-                    renderTable();
-                    updateResultsDisplay();
-                    showToast('قطعه حذف شد', 'قطعه با موفقیت حذف شد', 'success');
                 }
             }
         });
@@ -1284,6 +1317,21 @@ function addTableEventListeners() {
             }
         });
     });
+}
+
+function deleteCabinet(cabinetId) {
+    if (!confirm('آیا از حذف کامل این کابینت اطمینان دارید؟ تمام قطعات و نمای سه‌بعدی آن حذف خواهند شد.')) {
+        return;
+    }
+    
+    // Remove cabinet from state
+    AppState.cabinets = AppState.cabinets.filter(c => c.id !== cabinetId);
+    
+    // Re-render table
+    renderTable();
+    updateResultsDisplay();
+    
+    showToast('کابینت حذف شد', 'کابینت و تمام قطعات آن با موفقیت حذف شدند', 'success');
 }
 
 function addCustomRow() {
@@ -1374,7 +1422,7 @@ function printTable() {
                 }
                 
                 .print-header h1 {
-                    color: #2c3e50;
+                    color: #1e3a5f;
                     font-size: 28px;
                     margin-bottom: 10px;
                 }
@@ -1401,7 +1449,7 @@ function printTable() {
                 
                 .meta-label {
                     font-weight: bold;
-                    color: #2c3e50;
+                    color: #1e3a5f;
                 }
                 
                 table {
@@ -1412,7 +1460,7 @@ function printTable() {
                 }
                 
                 th {
-                    background: #333;
+                    background: #1e3a5f;
                     color: white;
                     font-weight: bold;
                     padding: 12px 8px;
@@ -1437,7 +1485,7 @@ function printTable() {
                 }
                 
                 .total-row {
-                    background: #333 !important;
+                    background: #1e3a5f !important;
                     color: white;
                     font-weight: bold;
                 }
@@ -1702,7 +1750,7 @@ async function exportToPDF() {
             body: tableData,
             theme: 'grid',
             headStyles: {
-                fillColor: [51, 51, 51],
+                fillColor: [30, 58, 95],
                 textColor: [255, 255, 255],
                 fontStyle: 'bold',
                 halign: 'center'
@@ -1930,20 +1978,42 @@ function deleteProject(projectId) {
 }
 
 // Scroll Handling for Header Auto-hide
+let scrollTimeout;
 function handleScroll() {
-    if (window.innerWidth > 768) return; // Only on mobile
+    // Only apply auto-hide on mobile (screen width <= 768px)
+    if (window.innerWidth > 768) {
+        DOM.mainHeader.classList.remove('header-hidden', 'header-visible');
+        DOM.mainHeader.style.transform = 'translateY(0)';
+        DOM.mainHeader.style.opacity = '1';
+        return;
+    }
     
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const headerHeight = DOM.mainHeader.offsetHeight;
     
-    if (scrollTop > AppState.lastScrollTop && scrollTop > 100) {
-        // Scrolling down - hide header
+    // Clear previous timeout
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+    }
+    
+    // If at top of page, always show header
+    if (scrollTop < 50) {
+        DOM.mainHeader.classList.remove('header-hidden');
+        DOM.mainHeader.classList.add('header-visible');
+        AppState.headerVisible = true;
+        return;
+    }
+    
+    // If scrolling down and header is visible, hide it
+    if (scrollTop > AppState.lastScrollTop && scrollTop > headerHeight) {
         if (AppState.headerVisible) {
-            DOM.mainHeader.classList.add('header-hidden');
             DOM.mainHeader.classList.remove('header-visible');
+            DOM.mainHeader.classList.add('header-hidden');
             AppState.headerVisible = false;
         }
-    } else {
-        // Scrolling up - show header
+    } 
+    // If scrolling up, show header
+    else if (scrollTop < AppState.lastScrollTop) {
         if (!AppState.headerVisible) {
             DOM.mainHeader.classList.remove('header-hidden');
             DOM.mainHeader.classList.add('header-visible');
@@ -1955,6 +2025,15 @@ function handleScroll() {
     
     // Update scroll top button
     updateScrollTopButton();
+    
+    // Set timeout to hide header after scrolling stops
+    scrollTimeout = setTimeout(() => {
+        if (scrollTop > headerHeight && AppState.headerVisible) {
+            DOM.mainHeader.classList.remove('header-visible');
+            DOM.mainHeader.classList.add('header-hidden');
+            AppState.headerVisible = false;
+        }
+    }, 1500);
 }
 
 function updateScrollTopButton() {
@@ -2070,6 +2149,8 @@ function handleResize() {
     // Update header visibility
     if (window.innerWidth > 768) {
         DOM.mainHeader.classList.remove('header-hidden', 'header-visible');
+        DOM.mainHeader.style.transform = 'translateY(0)';
+        DOM.mainHeader.style.opacity = '1';
         AppState.headerVisible = true;
     }
     
