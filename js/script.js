@@ -608,7 +608,7 @@ function calculateCabinetParts() {
         if (shelves > 0) {
             parts.push({
                 id: `shelf_${Date.now()}`,
-                description: 'طبله',
+                description: 'طبقه',
                 quantity: 1,
                 width: depth - 2,
                 height: (width - CONSTANTS.BOARD_THICKNESS * 2).toFixed(1),
